@@ -7,14 +7,6 @@ class Node;
 class ASTRewriter
 {
 public:
-	ASTRewriter()
-	{
-	};
-
-    ~ASTRewriter()
-    {
-    };
-
     void rewrite(Node* root, const int childIndex);
 };
 
