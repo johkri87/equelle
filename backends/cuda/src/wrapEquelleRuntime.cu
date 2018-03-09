@@ -168,10 +168,10 @@ CollOfScalar wrapEquelleRuntimeCUDA::gradientWrapper( const CollOfScalar& cell_s
         CollOfScalar out(int_faces.size());
         kernelSetup s = out.setup();
         gradientKernel<<<s.grid, s.block>>>( out.data(),
-                             cell_scalarfield.data(),
-                             int_faces.raw_pointer(),
-                             face_cells,
-                             out.size());
+                                             cell_scalarfield.data(),
+                                             int_faces.raw_pointer(),
+                                             face_cells,
+                                             out.size());
         
         return out;
     }

@@ -6,7 +6,7 @@
 #include "CudaMatrix.hpp"
 
 #include <opm/common/ErrorMacros.hpp>
-#include <opm/core/grid.h>
+#include <opm/grid/UnstructuredGrid.h>
 
 using namespace equelleCUDA;
 

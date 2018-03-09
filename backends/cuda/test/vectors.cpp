@@ -9,8 +9,8 @@
 #include <limits>
 #include <string>
 
-#include <opm/core/utility/parameters/ParameterGroup.hpp>
-#include <opm/core/grid/GridManager.hpp>
+#include <opm/common/utility/parameters/ParameterGroup.hpp>
+#include <opm/grid/GridManager.hpp>
 #include <opm/common/ErrorMacros.hpp>
 
 #include "EquelleRuntimeCUDA.hpp"

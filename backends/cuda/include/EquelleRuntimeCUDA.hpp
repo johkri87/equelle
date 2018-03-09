@@ -5,20 +5,15 @@
 #ifndef EQUELLERUNTIMECUDA_HEADER_INCLUDED
 #define EQUELLERUNTIMECUDA_HEADER_INCLUDED
 
-
-//#include <opm/autodiff/AutoDiffBlock.hpp>
 #include <opm/autodiff/AutoDiffHelpers.hpp>
 #include <opm/core/linalg/LinearSolverFactory.hpp>
+#include <opm/common/utility/parameters/ParameterGroup.hpp>
+#include <opm/grid/GridManager.hpp>
 
-//#include <Eigen/Eigen>
-
-#include <opm/core/utility/parameters/ParameterGroup.hpp>
-#include <opm/core/grid/GridManager.hpp>
 #include <vector>
 #include <string>
 #include <map>
 #include <tuple>
-
 
 // Including device code
 // This should be independent from the rest of the host code
