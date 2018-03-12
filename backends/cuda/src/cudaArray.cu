@@ -411,6 +411,7 @@ CollOfBool equelleCUDA::operator!=(const Scalar lhs, const CudaArray& rhs) {
     return (rhs != lhs);
 }
 
+
 /////////////////////////////////////////////////////////////////////////////////
 /// ----------------------- KERNEL IMPLEMENTATIONS: ---------------------------//
 /////////////////////////////////////////////////////////////////////////////////
@@ -563,7 +564,7 @@ __global__ void wrapCudaArray::comp_collNEcoll_kernel( bool* out,
         out[index] = ( lhs[index] != rhs[index] );
     }
 }
-                            
+
 __global__ void wrapCudaArray::comp_collNEscal_kernel( bool* out,
                                                        const double* lhs,
                                                        const double rhs,
@@ -573,17 +574,6 @@ __global__ void wrapCudaArray::comp_collNEscal_kernel( bool* out,
         out[index] = ( lhs[index] != rhs );
     }
 }
-
-/*__global__ void wrapCudaArray::multiply_add_kernel( bool* out,
-                                                    const double* a,
-                                                    const double* b,
-                                                    const double* c,
-                                                    const int size) {
-    const int index = myID();
-    if ( index < size ) {
-        out[index] = ( a[index] * b[index] + c[index] );
-    }
-}*/
 
 
 // Transforming CollOfBool

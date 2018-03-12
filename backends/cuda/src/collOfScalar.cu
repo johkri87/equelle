@@ -199,8 +199,6 @@ double CollOfScalar::reduce(const EquelleReduce reduce) const {
 //}
 
 
-
-
 // ------- ARITHMETIC OPERATIONS --------------------
 
 CollOfScalar equelleCUDA::operator+ (const CollOfScalar& lhs,

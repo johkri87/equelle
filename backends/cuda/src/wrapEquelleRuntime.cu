@@ -283,5 +283,61 @@ __global__ void wrapEquelleRuntimeCUDA::sqrtKernel(double* out, const int size) 
     }
 }
 
+// ----------- MULTIPLY ADD -----------
 
 
+CollOfScalar wrapEquelleRuntimeCUDA::multiplyAdd(const CollOfScalar& a, const Scalar b, const CollOfScalar& c) {
+    CudaArray out = a.value();
+    kernelSetup s = out.setup();
+    if (a.useAutoDiff() || c.useAutoDiff()) {
+        return a * b + c;
+    } else {
+        multiplyAddKernel<<<s.grid, s.block>>>(out.data(), b, c.data(), out.size());
+        return CollOfScalar(out);
+    }
+}
+
+CollOfScalar wrapEquelleRuntimeCUDA::multiplyAdd(const CollOfScalar& a, const CollOfScalar& b, const CollOfScalar& c) {
+    CudaArray out = a.value();
+    kernelSetup s = out.setup();
+    if (a.useAutoDiff() || b.useAutoDiff() || c.useAutoDiff()) {
+        return a * b + c;
+    } else {
+        multiplyAddKernel<<<s.grid, s.block>>>(out.data(), b.data(), c.data(), out.size());
+        return CollOfScalar(out);
+    }
+}
+
+__global__ void wrapEquelleRuntimeCUDA::multiplyAddKernel( double* a_out,
+                                                           const double* b,
+                                                           const double* c,
+                                                           const int size) {
+    const int index = myID();
+    if ( index < size ) {
+        a_out[index] = a_out[index] * b[index] + c[index];
+    }
+}
+
+__global__ void wrapEquelleRuntimeCUDA::multiplyAddKernel( double* a_out,
+                                                           const double b,
+                                                           const double* c,
+                                                           const int size) {
+    const int index = myID();
+    if ( index < size ) {
+        a_out[index] = a_out[index] * b + c[index];
+    }
+}
+
+/*
+CollOfScalar equelleCUDA::operator+ (const CollOfScalar& lhs,
+                     const CollOfScalar& rhs)
+{
+    //CudaArray val = lhs.val_ + rhs.val_;
+    CudaArray val = lhs.val_ + rhs.val_;
+    if (lhs.autodiff_ || rhs.autodiff_) {
+        CudaMatrix der = lhs.der_ + rhs.der_;
+        return CollOfScalar(val, der);
+    }
+    return CollOfScalar(val);
+}
+*/

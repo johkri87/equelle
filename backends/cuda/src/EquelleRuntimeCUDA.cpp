@@ -155,7 +155,27 @@ Scalar EquelleRuntimeCUDA::twoNorm(const CollOfScalar& vals) const {
     // This should be implemented without having to multiply matrices.
 }
 
+CollOfScalar EquelleRuntimeCUDA::multiplyAdd(const CollOfScalar& a,
+                                             const CollOfScalar& b,
+                                             const CollOfScalar& c)
+{
+    return wrapEquelleRuntimeCUDA::multiplyAdd(a,b,c);
+}
 
+
+CollOfScalar EquelleRuntimeCUDA::multiplyAdd(const CollOfScalar& a,
+                                             const Scalar b,
+                                             const CollOfScalar& c)
+{
+    return wrapEquelleRuntimeCUDA::multiplyAdd(a,b,c);
+}
+
+CollOfScalar EquelleRuntimeCUDA::multiplyAdd(const Scalar a,
+                                             const CollOfScalar& b,
+                                             const CollOfScalar& c)
+{
+    return wrapEquelleRuntimeCUDA::multiplyAdd(b,a,c);
+}
 
 void EquelleRuntimeCUDA::output(const String& tag, const double val) const
 {
