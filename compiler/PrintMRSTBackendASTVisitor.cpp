@@ -123,6 +123,18 @@ void PrintMRSTBackendASTVisitor::postVisit(MultiplyAddNode& node)
 {
 }
 
+void PrintMRSTBackendASTVisitor::visit(MultiplyDivideNode& node)
+{
+}
+
+void PrintMRSTBackendASTVisitor::midVisit(MultiplyDivideNode& node)
+{
+}
+
+void PrintMRSTBackendASTVisitor::postVisit(MultiplyDivideNode& node)
+{
+}
+
 void PrintMRSTBackendASTVisitor::visit(ComparisonOpNode&)
 {
     std::cout << '(';

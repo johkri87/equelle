@@ -111,7 +111,10 @@ void PrintASTVisitor::visit(BinaryOpNode& node)
 
 void PrintASTVisitor::visit(MultiplyAddNode& node)
 {
+}
 
+void PrintASTVisitor::visit(MultiplyDivideNode& node)
+{
 }
 
 void PrintASTVisitor::visit(ComparisonOpNode& node)
@@ -296,6 +299,14 @@ void PrintASTVisitor::midVisit(MultiplyAddNode& node)
 }
 
 void PrintASTVisitor::postVisit(MultiplyAddNode& node)
+{
+}
+
+void PrintASTVisitor::midVisit(MultiplyDivideNode& node)
+{
+}
+
+void PrintASTVisitor::postVisit(MultiplyDivideNode& node)
 {
 }
 

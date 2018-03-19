@@ -193,7 +193,29 @@ void PrintCPUBackendASTVisitor::postVisit(MultiplyAddNode&)
     std::cout << ')';
 }
 
+void PrintCPUBackendASTVisitor::visit(MultiplyDivideNode& node)
+{
+    if (isSuppressed()) {
+        return;
+    }
+    std::cout << "er.multiplyDivide(";
+}
 
+void PrintCPUBackendASTVisitor::midVisit(MultiplyDivideNode& node)
+{
+    if (isSuppressed()) {
+        return;
+    }
+    std::cout << ", ";
+}
+
+void PrintCPUBackendASTVisitor::postVisit(MultiplyDivideNode& node)
+{
+    if (isSuppressed()) {
+        return;
+    }
+    std::cout << ')';
+}
 void PrintCPUBackendASTVisitor::visit(ComparisonOpNode&)
 {
     if (isSuppressed()) {

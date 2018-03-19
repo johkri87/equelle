@@ -614,6 +614,61 @@ private:
     ExpressionNode* c_;
 };
 
+class MultiplyDivideNode : public ExpressionNode
+{
+public:
+        MultiplyDivideNode(ExpressionNode* a, ExpressionNode* b, ExpressionNode* c)
+        : a_(a), b_(b), c_(c)
+    {
+    }
+    virtual ~MultiplyDivideNode()
+    {
+        delete a_;
+        delete b_;
+        delete c_;
+    }
+    virtual EquelleType type() const
+    {
+    }
+    virtual void accept(ASTVisitorInterface& visitor)
+    {
+        visitor.visit(*this);
+        a_->accept(visitor);
+        visitor.midVisit(*this);
+        b_->accept(visitor);
+        visitor.midVisit(*this);
+        c_->accept(visitor);
+        visitor.postVisit(*this);
+    }
+    virtual int numChildren()
+    {
+        return 3;
+    }
+    virtual Node* getChild(const int index)
+    {
+        switch (index) {
+            case 0 : return a_;
+            case 1 : return b_;
+            case 2 : return c_;
+            default: throw compilerError("MultiplyAddNode::getChild()", "Index out of range.");;
+        }
+    }
+    virtual void setChild(const int index, Node* child)
+    {
+        ExpressionNode* exprchild = dynamic_cast<ExpressionNode*>(child);
+        switch (index) {
+            case 0 : a_ = exprchild; break;
+            case 1 : b_ = exprchild; break;
+            case 2 : c_ = exprchild; break;
+            default: throw compilerError("MultiplyAddNode::setChild()", "Index is out of range.");
+        }
+    }
+private:
+    ExpressionNode* a_;
+    ExpressionNode* b_;
+    ExpressionNode* c_;
+};
+
 
 enum ComparisonOp { Less, Greater, LessEqual, GreaterEqual, Equal, NotEqual };
 

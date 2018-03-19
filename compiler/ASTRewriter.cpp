@@ -56,7 +56,7 @@ void ASTRewriter::rewrite(Node* root, const int childIndex)
         rewrite(current->getChild(1), 1);
 
         // Pattern matching for multiply-add
-        if ( current->op() == Add ) {
+        if (current->op() == Add) {
             
             auto* lhs = dynamic_cast<BinaryOpNode*>(current->getChild(0));
             auto* rhs = dynamic_cast<BinaryOpNode*>(current->getChild(1));
@@ -83,6 +83,46 @@ void ASTRewriter::rewrite(Node* root, const int childIndex)
                                             dynamic_cast<ExpressionNode*>(current->getChild(addOpNodeIndex)));
             replaceNode(childIndex, current, replacementNode);
             deleteNode(mulOpNode);
+        } else
+        if (current->op() == Multiply) {
+            BinaryOpNode* current = dynamic_cast<BinaryOpNode*>(root);
+            current->getChild(0)->setParent(current);
+            current->getChild(1)->setParent(current);
+            rewrite(current->getChild(0), 0);
+            rewrite(current->getChild(1), 1);
+                
+            auto* rhs = dynamic_cast<BinaryOpNode*>(current->getChild(1));
+
+            if (rhs != nullptr && rhs->op() == Divide) {
+
+                auto replacementNode = 
+                            new MultiplyDivideNode(dynamic_cast<ExpressionNode*>(current->getChild(0)),
+                                                dynamic_cast<ExpressionNode*>(rhs->getChild(0)),
+                                                dynamic_cast<ExpressionNode*>(rhs->getChild(1)));
+                replaceNode(childIndex, current, replacementNode);
+                deleteNode(rhs);
+            } else {
+                return;
+            }
+        } else
+        if (current->op() == Divide) {
+            BinaryOpNode* current = dynamic_cast<BinaryOpNode*>(root);
+            current->getChild(0)->setParent(current);
+            current->getChild(1)->setParent(current);
+            rewrite(current->getChild(0), 0);
+            rewrite(current->getChild(1), 1);
+                
+            auto* lhs = dynamic_cast<BinaryOpNode*>(current->getChild(0));
+
+            if (lhs != nullptr && lhs->op() == Multiply) {
+
+                auto replacementNode = 
+                            new MultiplyDivideNode(dynamic_cast<ExpressionNode*>(lhs->getChild(0)),
+                                                dynamic_cast<ExpressionNode*>(lhs->getChild(1)),
+                                                dynamic_cast<ExpressionNode*>(current->getChild(1)));
+                replaceNode(childIndex, current, replacementNode);
+                deleteNode(lhs);
+            }
         }
     } else {   
         for ( int i = 0; i < root->numChildren(); i++ ) {

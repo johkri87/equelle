@@ -283,7 +283,7 @@ __global__ void wrapEquelleRuntimeCUDA::sqrtKernel(double* out, const int size) 
     }
 }
 
-// ----------- MULTIPLY ADD -----------
+// ----------- FUSED OPERATORS -----------
 
 
 CollOfScalar wrapEquelleRuntimeCUDA::multiplyAdd(const CollOfScalar& a, const Scalar b, const CollOfScalar& c) {
@@ -308,6 +308,32 @@ CollOfScalar wrapEquelleRuntimeCUDA::multiplyAdd(const CollOfScalar& a, const Co
     }
 }
 
+CollOfScalar wrapEquelleRuntimeCUDA::multiplyDivide(const CollOfScalar& a, const CollOfScalar& b, const CollOfScalar& c) {
+    CudaArray out = a.value();
+    kernelSetup s = out.setup();
+    if (a.useAutoDiff() || b.useAutoDiff() || c.useAutoDiff()) {
+        std::cout << "multiplyDivide: Is autodiff" << std::endl;
+        return a * b / c;
+    } else {
+        multiplyDivideKernel<<<s.grid, s.block>>>(out.data(), b.data(), c.data(), out.size());
+        return CollOfScalar(out);
+    }
+}
+
+CollOfScalar wrapEquelleRuntimeCUDA::multiplyDivide(const CollOfScalar& a, const Scalar b, const CollOfScalar& c) {
+    CudaArray out = a.value();
+    kernelSetup s = out.setup();
+    if (a.useAutoDiff() || c.useAutoDiff()) {
+        std::cout << "multiplyDivide: Is autodiff" << std::endl;
+        return a * b / c;
+    } else {
+        multiplyDivideKernel<<<s.grid, s.block>>>(out.data(), b, c.data(), out.size());
+        return CollOfScalar(out);
+    }
+}
+
+
+
 __global__ void wrapEquelleRuntimeCUDA::multiplyAddKernel( double* a_out,
                                                            const double* b,
                                                            const double* c,
@@ -325,5 +351,26 @@ __global__ void wrapEquelleRuntimeCUDA::multiplyAddKernel( double* a_out,
     const int index = myID();
     if ( index < size ) {
         a_out[index] = a_out[index] * b + c[index];
+    }
+}
+
+
+__global__ void wrapEquelleRuntimeCUDA::multiplyDivideKernel( double* a_out,
+                                                              const double* b,
+                                                              const double* c,
+                                                              const int size) {
+    const int index = myID();
+    if ( index < size ) {
+        a_out[index] = a_out[index] * b[index] / c[index];
+    }
+}
+
+__global__ void wrapEquelleRuntimeCUDA::multiplyDivideKernel( double* a_out,
+                                                              const double b,
+                                                              const double* c,
+                                                              const int size) {
+    const int index = myID();
+    if ( index < size ) {
+        a_out[index] = a_out[index] * b / c[index];
     }
 }

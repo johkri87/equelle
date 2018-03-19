@@ -175,6 +175,18 @@ public:
                              const CollOfScalar& b,
                              const CollOfScalar& c);
 
+    /*template <typename T, typename U, typename V>
+    V multiplyDivide(const T& a,
+                     const U& b,
+                     const V& c);*/
+
+    CollOfScalar multiplyDivide(const CollOfScalar& a,
+                                const CollOfScalar& b,
+                                const CollOfScalar& c);
+
+    CollOfScalar multiplyDivide(const Scalar a, const CollOfScalar& b, const CollOfScalar& c);
+    CollOfScalar multiplyDivide(const CollOfScalar& a, const Scalar b, const CollOfScalar& c);
+
     /// Divergence using matrix-vector product
     /*!
       Slow evaluation of the divergence function where the matrix fro

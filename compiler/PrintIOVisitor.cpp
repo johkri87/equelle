@@ -75,6 +75,7 @@ void PrintIOVisitor::visit(TypeNode& node) {}
 void PrintIOVisitor::visit(FuncTypeNode& node) {}
 void PrintIOVisitor::visit(BinaryOpNode& node) {}
 void PrintIOVisitor::visit(MultiplyAddNode& node) {}
+void PrintIOVisitor::visit(MultiplyDivideNode& node) {}
 void PrintIOVisitor::visit(ComparisonOpNode& node) {}
 void PrintIOVisitor::visit(NormNode&) {}
 void PrintIOVisitor::visit(UnaryNegationNode&) {}
@@ -104,6 +105,8 @@ void PrintIOVisitor::midVisit(BinaryOpNode&) {}
 void PrintIOVisitor::postVisit(BinaryOpNode&) {}
 void PrintIOVisitor::midVisit(MultiplyAddNode& node) {}
 void PrintIOVisitor::postVisit(MultiplyAddNode& node) {}
+void PrintIOVisitor::midVisit(MultiplyDivideNode& node) {}
+void PrintIOVisitor::postVisit(MultiplyDivideNode& node) {}
 void PrintIOVisitor::midVisit(ComparisonOpNode&) {}
 void PrintIOVisitor::postVisit(ComparisonOpNode&) {}
 void PrintIOVisitor::postVisit(NormNode&) {}

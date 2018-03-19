@@ -226,12 +226,15 @@ namespace equelleCUDA
 	__global__ void sqrtKernel( double* out, const int size);
 	
 
-	// ----------- MULTIPLY ADD -----------
+	// ----------- FUSED OPERATORS -----------
 
 
 CollOfScalar multiplyAdd(const CollOfScalar& a, const Scalar b, const CollOfScalar& c);
 
 CollOfScalar multiplyAdd(const CollOfScalar& a, const CollOfScalar& b, const CollOfScalar& c);
+
+CollOfScalar multiplyDivide(const CollOfScalar& a, const CollOfScalar& b, const CollOfScalar& c);
+CollOfScalar multiplyDivide(const CollOfScalar& a, const Scalar b, const CollOfScalar& c);
 
 __global__ void multiplyAddKernel( double* a_out,
                                    const double* b,
@@ -243,6 +246,15 @@ __global__ void multiplyAddKernel( double* a_out,
                                    const double* c,
                                    const int size);
 
+__global__ void multiplyDivideKernel( double* a_out,
+                                   const double* b,
+                                   const double* c,
+                                   const int size);
+
+__global__ void multiplyDivideKernel(double* a_out,
+                                     const double b,
+                                     const double* c,
+                                     const int size);
 
     } // namespace wrapEquelleRuntimeCUDA
     

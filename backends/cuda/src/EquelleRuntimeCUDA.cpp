@@ -177,6 +177,27 @@ CollOfScalar EquelleRuntimeCUDA::multiplyAdd(const Scalar a,
     return wrapEquelleRuntimeCUDA::multiplyAdd(b,a,c);
 }
 
+CollOfScalar EquelleRuntimeCUDA::multiplyDivide(const CollOfScalar& a,
+                                                const CollOfScalar& b,
+                                                const CollOfScalar& c)
+{
+    return wrapEquelleRuntimeCUDA::multiplyDivide(a,b,c);
+}
+
+CollOfScalar EquelleRuntimeCUDA::multiplyDivide(const CollOfScalar& a,
+                            const Scalar b, 
+                            const CollOfScalar& c)
+{
+    return wrapEquelleRuntimeCUDA::multiplyDivide(a,b,c);
+}
+
+CollOfScalar EquelleRuntimeCUDA::multiplyDivide(const Scalar a, 
+                            const CollOfScalar& b, 
+                            const CollOfScalar& c)
+{
+    return wrapEquelleRuntimeCUDA::multiplyDivide(b,a,c);
+}
+
 void EquelleRuntimeCUDA::output(const String& tag, const double val) const
 {
     std::cout << tag << " = " << val << std::endl;

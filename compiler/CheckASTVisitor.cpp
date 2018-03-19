@@ -217,6 +217,17 @@ void CheckASTVisitor::postVisit(MultiplyAddNode& node)
 {
 }
 
+void CheckASTVisitor::visit(MultiplyDivideNode& node)
+{
+}
+
+void CheckASTVisitor::midVisit(MultiplyDivideNode& node)
+{
+}
+
+void CheckASTVisitor::postVisit(MultiplyDivideNode& node)
+{
+}
 
 void CheckASTVisitor::visit(ComparisonOpNode&)
 {

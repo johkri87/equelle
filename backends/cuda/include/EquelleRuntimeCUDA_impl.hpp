@@ -204,6 +204,13 @@ V EquelleRuntimeCUDA::multiplyAdd(const T& a, const U& b, const V& c)
     return a * b + c;
 }
 
+/*template <typename T, typename U, typename V>
+V EquelleRuntimeCUDA::multiplyDivide(const T& a,
+                 const U& b,
+                 const V& c)
+{
+    return a * b / c;
+}*/
 
 // CENTRIOD
 template <int codim>
