@@ -256,6 +256,7 @@ __global__ void multiplyDivideKernel(double* a_out,
                                      const double* c,
                                      const int size);
 
+
     } // namespace wrapEquelleRuntimeCUDA
     
 

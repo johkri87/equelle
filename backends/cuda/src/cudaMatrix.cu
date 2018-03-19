@@ -685,6 +685,92 @@ CudaMatrix equelleCUDA::cudaMatrixSum(const CudaMatrix& lhs,
 } // cudaMatrixSum
 
 
+void printMatrixInfo(const CudaMatrix& mat, const std::string name)
+{
+    printf("Name: %s \nRows: %d\nCols: %d\n",name.c_str() ,mat.rows(), mat.cols());
+}
+
+// gemm2 performs the operation D = alpha ∗ A ∗ B + beta ∗ C
+// A B and C are matrices and alpha and beta are scalars
+// by setting alpha and beta to 1.0, we get D = A * B + C
+CudaMatrix equelleCUDA::multiplyAdd(const CudaMatrix& a, const CudaMatrix& b, const CudaMatrix& c) {
+
+    /*printMatrixInfo(a, "a");
+    printMatrixInfo(b, "b");
+    printMatrixInfo(c, "c");*/
+
+    if ( a.isEmpty() || b.isEmpty() ) {
+        return c;
+    }
+    // Create an empty matrix. Need to set rows, cols, nnz, and allocate arrays!
+    CudaMatrix out;
+    // Legal matrix sizes depend on whether the matrices are transposed or not!
+    int innerSize = out.confirmMultSize(a, b);
+
+    // assume matrices A, B and D are ready. 
+    int baseC;
+    csrgemm2Info_t info = NULL; 
+    size_t bufferSize;
+    void* buffer = NULL;
+    // nnzTotalDevHostPtr points to host memory 
+    int* nnzTotalDevHostPtr = &out.nnz_;
+    double alpha = 1.0;
+    double beta = 1.0;
+    cusparseSetPointerMode(CUSPARSE, CUSPARSE_POINTER_MODE_HOST);
+
+    // step 1: create an opaque structure 
+    cusparseCreateCsrgemm2Info(&info); 
+    
+
+    // step 2: allocate buffer for csrgemm2Nnz and csrgemm2
+    cusparseDcsrgemm2_bufferSizeExt(CUSPARSE, out.rows_, out.cols_, innerSize, &alpha,
+
+                                     a.description_, a.nnz_, a.csrRowPtr_, a.csrColInd_,
+
+
+                                     b.description_, b.nnz_, b.csrRowPtr_, b.csrColInd_,
+                                     &beta,
+                                     c.description_, c.nnz_, c.csrRowPtr_, c.csrColInd_,
+                                      info, &bufferSize);
+    cudaMalloc(&buffer, bufferSize);
+    
+
+    // step 3: compute csrRowPtrC
+    cudaMalloc((void**)&out.csrRowPtr_, sizeof(int)*(out.rows_+1));
+    cusparseXcsrgemm2Nnz(CUSPARSE, 
+                         out.rows_, out.cols_, innerSize,
+                         a.description_, a.nnz_, a.csrRowPtr_, a.csrColInd_,
+                         b.description_, b.nnz_, b.csrRowPtr_, b.csrColInd_,
+                         c.description_, c.nnz_, c.csrRowPtr_, c.csrColInd_,
+                         out.description_, out.csrRowPtr_,
+                         nnzTotalDevHostPtr, info, buffer );
+    if (NULL != nnzTotalDevHostPtr){
+        out.nnz_ = *nnzTotalDevHostPtr;
+    }else{
+        cudaMemcpy(&out.nnz_, out.csrRowPtr_+out.rows_, sizeof(int), cudaMemcpyDeviceToHost);
+        cudaMemcpy(&baseC, out.csrRowPtr_, sizeof(int), cudaMemcpyDeviceToHost);
+        out.nnz_ -= baseC;
+    } 
+    
+
+    // step 4: finish sparsity pattern and value of C
+    cudaMalloc((void**)&out.csrColInd_, sizeof(int)*out.nnz_);
+    cudaMalloc((void**)&out.csrVal_, sizeof(double)*out.nnz_);
+
+
+    cusparseDcsrgemm2(CUSPARSE, out.rows_, out.cols_, innerSize, &alpha, 
+                      a.description_, a.nnz_, a.csrVal_, a.csrRowPtr_, a.csrColInd_, 
+                      b.description_, b.nnz_, b.csrVal_, b.csrRowPtr_, b.csrColInd_,
+                      &beta,
+                      c.description_, c.nnz_, c.csrVal_, c.csrRowPtr_, c.csrColInd_,
+                      out.description_, out.csrVal_, out.csrRowPtr_, out.csrColInd_,
+                      info, buffer);
+    // step 5: destroy the opaque structure
+    cusparseDestroyCsrgemm2Info(info);
+
+    return out;
+}
+
 
 CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs)
 {

@@ -204,6 +204,7 @@ public:
     friend CudaMatrix cudaMatrixSum(const CudaMatrix& lhs,
                                     const CudaMatrix& rhs,
                                     const double beta);
+    friend CudaMatrix multiplyAdd(const CudaMatrix& a, const CudaMatrix& b, const CudaMatrix& c);
     
     friend CudaMatrix operator*(const CudaMatrix& lhs, const CudaMatrix& rhs);
     friend CudaArray operator*(const CudaMatrix& mat, const CudaArray& vec);
@@ -282,6 +283,9 @@ private:
     CudaMatrix cudaMatrixSum( const CudaMatrix& lhs,
                               const CudaMatrix& rhs,
                               const double beta);
+
+    CudaMatrix multiplyAdd(const CudaMatrix& a, const CudaMatrix& b, const CudaMatrix& c);
+
 
     //! Matrix * Matrix operator
     /*!

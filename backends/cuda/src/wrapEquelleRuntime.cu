@@ -290,22 +290,24 @@ CollOfScalar wrapEquelleRuntimeCUDA::multiplyAdd(const CollOfScalar& a, const Sc
     CudaArray out = a.value();
     kernelSetup s = out.setup();
     if (a.useAutoDiff() || c.useAutoDiff()) {
+        //multiplyAddKernel<<<s.grid, s.block>>>(out.data(), b, c.data(), out.size());
+        //CudaMatrix der = wrapEquelleRuntimeCUDA::multiplyAdd(a.der, b.der, c.der);
+        //return CollOfScalar(out, der)
         return a * b + c;
-    } else {
-        multiplyAddKernel<<<s.grid, s.block>>>(out.data(), b, c.data(), out.size());
-        return CollOfScalar(out);
     }
+    multiplyAddKernel<<<s.grid, s.block>>>(out.data(), b, c.data(), out.size());
+    return CollOfScalar(out);
 }
 
 CollOfScalar wrapEquelleRuntimeCUDA::multiplyAdd(const CollOfScalar& a, const CollOfScalar& b, const CollOfScalar& c) {
     CudaArray out = a.value();
     kernelSetup s = out.setup();
+    multiplyAddKernel<<<s.grid, s.block>>>(out.data(), b.data(), c.data(), out.size());
     if (a.useAutoDiff() || b.useAutoDiff() || c.useAutoDiff()) {
-        return a * b + c;
-    } else {
-        multiplyAddKernel<<<s.grid, s.block>>>(out.data(), b.data(), c.data(), out.size());
-        return CollOfScalar(out);
+        CudaMatrix der = multiplyAdd(a.derivative(), b.derivative(), c.derivative());
+        return CollOfScalar(out, der);
     }
+    return CollOfScalar(out);
 }
 
 CollOfScalar wrapEquelleRuntimeCUDA::multiplyDivide(const CollOfScalar& a, const CollOfScalar& b, const CollOfScalar& c) {
