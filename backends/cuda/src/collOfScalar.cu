@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 
+
 #include <opm/common/ErrorMacros.hpp>
 
 #include "CollOfScalar.hpp"
@@ -48,6 +49,15 @@ CollOfScalar::CollOfScalar(const CudaArray& val)
     // Intentionally left emtpy
 }
 
+/*
+CollOfScalar::CollOfScalar(CudaArray&& val)
+    : val_(std::move(val)),
+      der_(),
+      autodiff_(false)
+{
+    // Intentionally left emtpy
+}*/
+
 CollOfScalar::CollOfScalar(const std::vector<double>& host_vec)
     : val_(host_vec),
       der_(),
@@ -87,6 +97,28 @@ CollOfScalar::CollOfScalar(const CollOfScalar& coll)
       autodiff_(coll.autodiff_)
 {
     // Intentionally left emtpy
+}
+
+// Move constructor
+CollOfScalar::CollOfScalar(CollOfScalar&& coll)
+    : val_(std::move(coll.val_)),
+      der_(std::move(coll.der_)),
+      autodiff_(coll.autodiff_) 
+{
+    // Intentionally left emtpy
+    //std::cout << "In CollOfScalar move constructor." << std::endl;
+}
+
+// Assignment move operator
+CollOfScalar& CollOfScalar::operator= (CollOfScalar&& other)
+{
+    //std::cout << "In CollOfScalar move assignment operator" << std::endl;
+    val_ = std::move(other.val_);
+    autodiff_ = other.autodiff_;
+    if ( autodiff_ ) {
+        der_ = std::move(other.der_);
+    }
+    return *this;
 }
 
 // Assignment copy operator

@@ -45,6 +45,10 @@ namespace equelleCUDA {
     */
     explicit CollOfScalar(const CudaArray& val);
 
+
+
+    //explicit CollOfScalar(CudaArray&& val);
+
     //! Constructor for creating a primary variable
     /*!
       Input should be a non-autodiff CollOfScalar, and will be copied to
@@ -76,7 +80,9 @@ namespace equelleCUDA {
       \param coll CollOfScalar to copy from.
     */
     CollOfScalar(const CollOfScalar& coll);  
+    CollOfScalar(CollOfScalar&& coll);  
     
+    //CollOfScalar(CollOfScalar&& coll);
 
     //! Copy assignment operator
     /*!
@@ -89,6 +95,7 @@ namespace equelleCUDA {
       Copy the array from other to this.
     */
     CollOfScalar& operator= (const CollOfScalar& other);
+    CollOfScalar& operator= (CollOfScalar&& other);
 
 
 

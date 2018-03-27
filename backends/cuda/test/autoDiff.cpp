@@ -553,6 +553,8 @@ int main(int argc, char** argv) {
     std::cout << "After trinary if max " << er.maxReduce(myColl13_intf) << " and min " << er.minReduce(myColl13_intf) << "\n";
 
 
+    std::cout << "Hepphepp" << std::endl;
+
     //printNonzeros(serial_fulldiv);
     CollOfScalar myTri_cuda = er.trinaryIf( cuda_fulldiv > 0, 
                         2.4 * cuda_fulldiv,
@@ -561,7 +563,6 @@ int main(int argc, char** argv) {
                                                            2.4 * serial_fulldiv,
                                                            -1.2 * serial_fulldiv);
     if ( compareER( myTri_cuda, myTri_serial, "TrinaryIf", 100) ) { return 1; }
-
 
     // REDUCTIONS
     double cuda_sum = er.sumReduce(myTri_cuda);
@@ -639,7 +640,6 @@ int main(int argc, char** argv) {
         SerialCollOfScalar serial_to_output = serialER.operatorExtend(sinput2_intc, 
                                                                       serialER.interiorCells(), 
                                                                       serialER.allCells());
-        //countNonzeros(to_output, serial_to_output);
 
         if ( compareER(to_output, serial_to_output, "Extend in lambda function", 0, ad)){MY_THROW}
 

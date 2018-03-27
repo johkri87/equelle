@@ -80,6 +80,9 @@ public:
     */
     CudaMatrix(const CudaMatrix& mat);
     
+    /* Move constructor */
+    CudaMatrix(CudaMatrix&& mat);
+
     //! Constructor for testing using host arrays
     /*!
       This constructor takes pointers to host memory as input, allocates the same 
@@ -148,6 +151,11 @@ public:
     */
     explicit CudaMatrix( const thrust::device_vector<int> set,
                          const int full_size);
+
+
+    void swap(CudaMatrix& other) noexcept;
+
+    CudaMatrix& operator= (CudaMatrix&& other);
 
     //! Copy assignment operator
     /*!

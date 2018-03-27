@@ -76,7 +76,10 @@ public:
       Allocates new device memory block, and makes a copy of the collection values.
       \param coll cudaArray to copy from.
     */
-    CudaArray(const CudaArray& coll);  
+    CudaArray(const CudaArray& coll);
+
+
+    CudaArray(CudaArray&& coll);  
     
 
     //! Copy assignment operator
@@ -90,6 +93,7 @@ public:
       Copy the array from other to this.
     */
     CudaArray& operator= (const CudaArray& other);
+    CudaArray& operator= (CudaArray&& other);
 
 
 
