@@ -169,6 +169,53 @@ void PrintCPUBackendASTVisitor::postVisit(BinaryOpNode&)
     std::cout << ')';
 }
 
+void PrintCPUBackendASTVisitor::visit(MultiplyAddNode&)
+{
+    if (isSuppressed()) {
+        return;
+    }
+    std::cout << "er.multiplyAdd(";
+}
+
+void PrintCPUBackendASTVisitor::midVisit(MultiplyAddNode&)
+{
+    if (isSuppressed()) {
+        return;
+    }
+    std::cout << ", ";
+}
+
+void PrintCPUBackendASTVisitor::postVisit(MultiplyAddNode&)
+{
+    if (isSuppressed()) {
+        return;
+    }
+    std::cout << ')';
+}
+
+void PrintCPUBackendASTVisitor::visit(MultiplyDivideNode& node)
+{
+    if (isSuppressed()) {
+        return;
+    }
+    std::cout << "er.multiplyDivide(";
+}
+
+void PrintCPUBackendASTVisitor::midVisit(MultiplyDivideNode& node)
+{
+    if (isSuppressed()) {
+        return;
+    }
+    std::cout << ", ";
+}
+
+void PrintCPUBackendASTVisitor::postVisit(MultiplyDivideNode& node)
+{
+    if (isSuppressed()) {
+        return;
+    }
+    std::cout << ')';
+}
 void PrintCPUBackendASTVisitor::visit(ComparisonOpNode&)
 {
     if (isSuppressed()) {
