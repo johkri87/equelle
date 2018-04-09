@@ -79,7 +79,6 @@ CollOfScalar::CollOfScalar(const CudaArray& val, const CudaMatrix& der)
     // Intentionally left empty
 }
 
-
 // Copy constructor
 CollOfScalar::CollOfScalar(const CollOfScalar& coll)
     : val_(coll.val_),
@@ -88,6 +87,17 @@ CollOfScalar::CollOfScalar(const CollOfScalar& coll)
 {
     // Intentionally left emtpy
 }
+
+// Move constructor
+CollOfScalar::CollOfScalar(CollOfScalar&& coll)
+    : val_(std::move(coll.val_)),
+      der_(std::move(coll.der_)),
+      autodiff_(coll.autodiff_) 
+{
+    // Intentionally left emtpy
+    //std::cout << "In CollOfScalar move constructor." << std::endl;
+}
+
 
 // Assignment copy operator
 CollOfScalar& CollOfScalar::operator= (const CollOfScalar& other)
@@ -99,6 +109,18 @@ CollOfScalar& CollOfScalar::operator= (const CollOfScalar& other)
 	if ( autodiff_ ) {
 	    der_ = other.der_;
 	}
+    }
+    return *this;
+}
+
+// Assignment move operator
+CollOfScalar& CollOfScalar::operator= (CollOfScalar&& other)
+{
+    //std::cout << "In CollOfScalar move assignment operator" << std::endl;
+    val_ = std::move(other.val_);
+    autodiff_ = other.autodiff_;
+    if ( autodiff_ ) {
+        der_ = std::move(other.der_);
     }
     return *this;
 }
