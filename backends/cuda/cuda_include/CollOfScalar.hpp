@@ -77,6 +77,7 @@ namespace equelleCUDA {
 	*/
 	CollOfScalar(const CollOfScalar& coll);  
 	
+	CollOfScalar(CollOfScalar&& coll);
 
 	//! Copy assignment operator
 	/*!
@@ -90,6 +91,11 @@ namespace equelleCUDA {
 	*/
 	CollOfScalar& operator= (const CollOfScalar& other);
 
+	//! Move assignment operator
+	/*!
+	Moves the contents of other into this.
+	*/
+	CollOfScalar& operator= (CollOfScalar&& other);
 
 
 	//! Destructor
