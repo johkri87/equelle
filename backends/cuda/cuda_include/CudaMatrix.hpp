@@ -80,6 +80,9 @@ namespace equelleCUDA {
 	*/
 	CudaMatrix(const CudaMatrix& mat);
 	
+	/* Move constructor */
+    CudaMatrix(CudaMatrix&& mat);
+
 	//! Constructor for testing using host arrays
 	/*!
 	  This constructor takes pointers to host memory as input, allocates the same 
@@ -156,7 +159,18 @@ namespace equelleCUDA {
 	*/
 	CudaMatrix& operator= (const CudaMatrix& other);
 	
-       
+
+	//! Swaps the content of this object and other.
+	// swap is useful for implementing move semantics.
+	void swap(CudaMatrix& other) noexcept;
+
+	//! Move assignment operator
+	/*!
+	  Moves the contents of other into this object.
+	*/
+	CudaMatrix& operator= (CudaMatrix&& other);
+
+
 	//! Destructor
 	/*!
 	  Free all device memory allocated by the given object.
