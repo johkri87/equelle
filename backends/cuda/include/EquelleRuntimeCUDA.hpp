@@ -125,6 +125,8 @@ public:
     CollOfScalar norm(const CollOfIndices<codim>& set) const;
     /// 2-norm of a set of vectors
     CollOfScalar norm(const CollOfVector& vectors) const;
+    /// Norm of a Collection of Scalars
+    CollOfScalar norm(const CollOfScalar& scalars) const;
     /// Centroid positions of a set of cells/faces
     template <int codim>
     CollOfVector centroid(const CollOfIndices<codim>& set) const;

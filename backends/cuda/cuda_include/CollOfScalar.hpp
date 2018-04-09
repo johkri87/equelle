@@ -98,6 +98,14 @@ namespace equelleCUDA {
 	*/
 	~CollOfScalar();
 	
+
+    //! Norm of the collection
+    /*!
+      \return Collection with absolute values.
+    */
+    CollOfScalar norm() const;
+
+
 	/*! \return The size of the collection */
 	int size() const;
 	
