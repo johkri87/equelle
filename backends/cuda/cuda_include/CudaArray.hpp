@@ -124,7 +124,8 @@ namespace equelleCUDA {
 	*/
 	kernelSetup setup() const;
 
-
+	/*! \return The absolute values of the CudaArray. */
+	CudaArray abs() const;
 
     private:
 	int size_;
@@ -144,13 +145,22 @@ namespace equelleCUDA {
     }; // class CudaArray
 
 
-    
+
 
     //! Functions closely related to the CudaArray class
     namespace wrapCudaArray {
 	
 	// ---------------- CUDA KERNELS ------------------- //
 	
+	//! CUDA Kernel to get absolute value of an array.
+	/*!
+	  Sets the entries of out to the absolute values of the entries of in.
+	  \param[out] out Array of output values
+	  \param[in] in Array of values to get absolute values from.
+	  \param[in] size The size of data array
+	 */
+	__global__ void abs_kernel(double* out, const double* in, const int size);
+
 
 	//! Kernel for initializing to uniform values
 	/*!

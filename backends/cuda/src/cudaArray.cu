@@ -194,7 +194,6 @@ int CudaArray::size() const
 }
 
 
-
 void CudaArray::checkError_(const std::string& msg) const {
     if ( cudaStatus_ != cudaSuccess ) {
 	OPM_THROW(std::runtime_error, "\nCuda error\n\t" << msg << " - Error code: " << cudaGetErrorString(cudaStatus_));
@@ -202,6 +201,13 @@ void CudaArray::checkError_(const std::string& msg) const {
 }
 
 
+CudaArray CudaArray::abs() const
+{
+    CudaArray out(size_);
+    kernelSetup s = setup_;
+    abs_kernel<<<s.grid, s.block>>>(out.data(), dev_values_, size_);
+    return out;
+}
 
 
 
@@ -403,6 +409,15 @@ CollOfBool equelleCUDA::operator!=(const Scalar lhs, const CudaArray& rhs) {
 /////////////////////////////////////////////////////////////////////////////////
 /// ----------------------- KERNEL IMPLEMENTATIONS: ---------------------------//
 /////////////////////////////////////////////////////////////////////////////////
+
+
+__global__ void wrapCudaArray::abs_kernel(double* out, const double* in, const int size) {
+    const int i = myID();
+    if ( i < size ) {
+        out[i] = fabs(in[i]);
+    }
+}
+
 
 __global__ void wrapCudaArray::setUniformDouble(double* data, const double val, const int size)
 {

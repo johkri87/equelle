@@ -81,7 +81,11 @@ if (Boost_FOUND)
 			${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
 			equelle_cuda
 			equelle_rt
-			opmsimulators opmgrid opmparser opmcommon
+			/home/kristian/Equelle/opm/opm-common/build/lib/libopmcommon.a
+			/home/kristian/Equelle/opm/opm-simulators/build/lib/libopmsimulators.a
+			/home/kristian/Equelle/opm/opm-grid/build/lib/libopmgrid.a
+			/home/kristian/Equelle/opm/opm-parser/build/lib/libopmparser.a
+			#opmsimulators opmgrid opmparser opmcommon
 			boost_filesystem boost_system boost_regex
 			tinyxml ecl umfpack ${SUPERLU_LIB} dunecommon
 		)
