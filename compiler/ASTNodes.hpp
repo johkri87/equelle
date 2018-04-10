@@ -438,24 +438,9 @@ private:
 
 enum BinaryOp { Add, Subtract, Multiply, Divide };
 
-
-class BinaryOpNode : public ExpressionNode
+static EquelleType getBinaryOpType(BinaryOp op, const EquelleType& lt, const EquelleType& rt, const std::string where)
 {
-public:
-    BinaryOpNode(BinaryOp op, ExpressionNode* left, ExpressionNode* right)
-        : op_(op), left_(left), right_(right)
-    {
-    }
-    virtual ~BinaryOpNode()
-    {
-        delete left_;
-        delete right_;
-    }
-    EquelleType type() const
-    {
-        EquelleType lt = left_->type();
-        EquelleType rt = right_->type();
-        switch (op_) {
+    switch (op) {
         case Add:
             return lt; // should be identical to rt.
         case Subtract:
@@ -476,9 +461,29 @@ public:
             return EquelleType(bt, coll ? Collection : None, gm);
         }
         default:
-            yyerror("internal compiler error in BinaryOpNode::type().");
+            std::string msg = "internal compiler error in " + where +".";
+            yyerror(msg.c_str());
             return EquelleType();
         }
+}
+
+class BinaryOpNode : public ExpressionNode
+{
+public:
+    BinaryOpNode(BinaryOp op, ExpressionNode* left, ExpressionNode* right)
+        : op_(op), left_(left), right_(right)
+    {
+    }
+    virtual ~BinaryOpNode()
+    {
+        delete left_;
+        delete right_;
+    }
+    EquelleType type() const
+    {
+        EquelleType lt = left_->type();
+        EquelleType rt = right_->type();
+        return getBinaryOpType(op_, lt, rt,"BinaryOpNode::type()");
     }
     Dimension dimension() const
     {
