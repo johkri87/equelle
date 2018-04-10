@@ -10,6 +10,7 @@
 #include <iterator>
 #include <string>
 #include <vector>
+#include <typeinfo>
 #include <opm/grid/utility/StopWatch.hpp>
 #include <opm/autodiff/AutoDiffHelpers.hpp>
 
@@ -196,6 +197,26 @@ CollOfIndices<codim> EquelleRuntimeCUDA::trinaryIf( const CollOfBool& predicate,
 									 iffalse.device_vector()));
 }
 
+// MULTIPLY ADD
+template <typename T, typename U, typename V>
+V EquelleRuntimeCUDA::multiplyAdd(const T& a, const U& b, const V& c)
+{
+    std::cout << "In generic multiplyAdd. Possibly missing a multiplyAdd implementation.\nTypes: (" << 
+        typeid(a).name() << ", " << typeid(b).name() << ", " << typeid(c).name() << ")" << std::endl;
+    return a * b + c;
+}
+
+
+// MULTIPLY DIVIDE
+template <typename T, typename U, typename V>
+V EquelleRuntimeCUDA::multiplyDivide(const T& a,
+                 const U& b,
+                 const V& c)
+{
+    std::cout << "In generic multiplyDivide. Possibly missing a multiplyDivide implementation.\nTypes: (" << 
+        typeid(a).name() << ", " << typeid(b).name() << ", " << typeid(c).name() << ")" << std::endl;
+    return a * b / c;
+}
 
 
 
