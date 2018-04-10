@@ -157,6 +157,15 @@ public:
       \sa gradient
      */
     CollOfScalar gradient_matrix(const CollOfScalar& cell_scalarfield) const;
+
+    template <typename T, typename U, typename V>
+    V multiplyAdd(const T& a, const U& b, const V& c);
+
+    template <typename T, typename U, typename V>
+    V multiplyDivide(const T& a,
+                     const U& b,
+                     const V& c);
+
     /// Discrete divergence in every cell
     /*!
       Computes the directional sum of values on all faces for every cell.
