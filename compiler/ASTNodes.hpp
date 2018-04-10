@@ -438,34 +438,6 @@ private:
 
 enum BinaryOp { Add, Subtract, Multiply, Divide };
 
-static EquelleType getBinaryOpType(BinaryOp op, const EquelleType& lt, const EquelleType& rt, const std::string where)
-{
-    switch (op) {
-        case Add:
-            return lt; // should be identical to rt.
-        case Subtract:
-            return lt; // should be identical to rt.
-        case Multiply: {
-            const bool isvec = lt.basicType() == Vector || rt.basicType() == Vector;
-            const BasicType bt = isvec ? Vector : Scalar;
-            const bool coll = lt.isCollection() || rt.isCollection();
-            const bool sequence = lt.isSequence() || rt.isSequence();
-            const CompositeType ct = coll ? Collection : (sequence ? Sequence : None);
-            const int gm = lt.isCollection() ? lt.gridMapping() : rt.gridMapping();
-            return EquelleType(bt, ct, gm);
-        }
-        case Divide: {
-            const BasicType bt = lt.basicType();
-            const bool coll = lt.isCollection() || rt.isCollection();
-            const int gm = lt.isCollection() ? lt.gridMapping() : rt.gridMapping();
-            return EquelleType(bt, coll ? Collection : None, gm);
-        }
-        default:
-            std::string msg = "internal compiler error in " + where +".";
-            yyerror(msg.c_str());
-            return EquelleType();
-        }
-}
 
 class BinaryOpNode : public ExpressionNode
 {
@@ -543,6 +515,34 @@ public:
             default: throw compilerError("BinaryOpNode::setChild()", "Index is out of range.");
         }
     }
+    static EquelleType getBinaryOpType(BinaryOp op, const EquelleType& lt, const EquelleType& rt, const std::string where)
+    {
+        switch (op) {
+            case Add:
+                return lt; // should be identical to rt.
+            case Subtract:
+                return lt; // should be identical to rt.
+            case Multiply: {
+                const bool isvec = lt.basicType() == Vector || rt.basicType() == Vector;
+                const BasicType bt = isvec ? Vector : Scalar;
+                const bool coll = lt.isCollection() || rt.isCollection();
+                const bool sequence = lt.isSequence() || rt.isSequence();
+                const CompositeType ct = coll ? Collection : (sequence ? Sequence : None);
+                const int gm = lt.isCollection() ? lt.gridMapping() : rt.gridMapping();
+                return EquelleType(bt, ct, gm);
+            }
+            case Divide: {
+                const BasicType bt = lt.basicType();
+                const bool coll = lt.isCollection() || rt.isCollection();
+                const int gm = lt.isCollection() ? lt.gridMapping() : rt.gridMapping();
+                return EquelleType(bt, coll ? Collection : None, gm);
+            }
+            default:
+                std::string msg = "internal compiler error in " + where +".";
+                yyerror(msg.c_str());
+                return EquelleType();
+            }
+    }
 private:
     BinaryOp op_;
     ExpressionNode* left_;
@@ -565,23 +565,12 @@ public:
     }
     virtual EquelleType type() const
     {
-
         // Type of left and right side of multiplication
         EquelleType lt = a_->type();
         EquelleType rt = b_->type();
 
-        // This test is taken from BinaryOpNode::type()
-        const bool isvec = lt.basicType() == Vector || rt.basicType() == Vector;
-        const BasicType bt = isvec ? Vector : Scalar;
-        const bool coll = lt.isCollection() || rt.isCollection();
-        const bool sequence = lt.isSequence() || rt.isSequence();
-        const CompositeType ct = coll ? Collection : (sequence ? Sequence : None);
-        const int gm = lt.isCollection() ? lt.gridMapping() : rt.gridMapping();
-
-        auto multiplicationType = EquelleType(bt, ct, gm);
-
-        // We return the type of a * b since c should have the same type
-        return multiplicationType;
+        // We return the type of a * b since c must have the same type
+        return BinaryOpNode::getBinaryOpType(Multiply, lt, rt, "MultiplyAddNode::type()");
     }
     virtual void accept(ASTVisitorInterface& visitor)
     {
@@ -637,7 +626,8 @@ public:
     }
     virtual EquelleType type() const
     {
-        return EquelleType();
+        EquelleType mulType = BinaryOpNode::getBinaryOpType(Multiply, a_->type(), b_->type(), "MultiplyDivide::type()");
+        return BinaryOpNode::getBinaryOpType(Divide, mulType, c_->type(), "MultiplyDivide::type()");
     }
     virtual void accept(ASTVisitorInterface& visitor)
     {
