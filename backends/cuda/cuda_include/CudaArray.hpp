@@ -407,6 +407,8 @@ namespace equelleCUDA {
 	
     // -------------- Operation overloading ------------------- //
     
+	std::ostream& operator<<(std::ostream& output, const CudaArray& arr);
+
     // Overloading of operator -
     /*!
       Wrapper for the CUDA kernel which performs the operation.

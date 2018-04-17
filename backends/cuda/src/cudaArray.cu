@@ -234,6 +234,17 @@ CudaArray CudaArray::abs() const
 /////////////////////////////////////////////////////////////////////////////////
 
 
+std::ostream& equelleCUDA::operator<<(std::ostream& output, const CudaArray& arr)
+{
+  std::vector<double> vec = arr.copyToHost();
+  output << "CudaArray values:\n";
+  for( int i = 0; i < vec.size(); i++){
+    output << "[" << i << "]: " << vec[i] << "\n";
+  }
+  return output;
+}
+
+
 
 CudaArray equelleCUDA::operator-(const CudaArray& lhs, const CudaArray& rhs) {
 

@@ -610,7 +610,41 @@ bool CudaMatrix::isTranspose() const {
 }
 
 
+int countActualNonZeros(CudaMatrix mat) {
+    hostMat hmat = mat.toHost();
+    int count = hmat.nnz;
+    assert(hmat.vals.size() == hmat.nnz);
+    for( int i = 0; i < hmat.nnz; i++ ) {
+        if(fabs(hmat.vals[i]) == 0.0){
+            --count;
+        }
+    }
+    return count;
+}
+
 // --------------------- OVERLOADING OF OPERATORS -------------------------- //
+
+std::ostream& equelleCUDA::operator<<(std::ostream& output, const CudaMatrix& mat)
+{
+  //hostMat hmat = mat.toHost();
+  output << "Info about CudaMatrix "
+         << "\nRows: " << mat.rows()
+         << "\nColumns: " << mat.cols()
+         << "\nNNZ: " << mat.nnz()
+         << "\nEmpty: " << (mat.isEmpty() ? "Yes" : "No")
+         << "\nRowPtr: " << mat.csrRowPtr()
+         << "\nCsrColInd: " << mat.csrColInd()
+         << "\nCsrVal: " << mat.csrVal();
+         //<< "\nFirst CsrVal: " << hmat.vals[0];
+         if(mat.isEmpty()){
+          return output;
+         }
+         // After some operations, explicit zeroes are stored,
+         // so we check the actual count.
+         output << "\nActual NNZ: " << countActualNonZeros(mat)
+         << "\nTransposed: " << (mat.isTranspose() ? "Yes" : "No"); 
+         return output;
+}
 
 // Operator +
 CudaMatrix equelleCUDA::operator+(const CudaMatrix& lhs, const CudaMatrix& rhs) {

@@ -218,12 +218,14 @@ namespace equelleCUDA {
 	friend CudaMatrix cudaMatrixSum(const CudaMatrix& lhs,
 					const CudaMatrix& rhs,
 					const double beta);
-	
 	friend CudaMatrix operator*(const CudaMatrix& lhs, const CudaMatrix& rhs);
 	friend CudaArray operator*(const CudaMatrix& mat, const CudaArray& vec);
 	friend CudaMatrix operator*(const CudaMatrix& lhs, const Scalar rhs);
 	friend CudaMatrix operator*(const Scalar lhs, const CudaMatrix& rhs);
 	friend CudaMatrix operator-(const CudaMatrix& arg);
+  // Check if the matrix is a transpose or not.
+  bool isTranspose() const;
+
 
     private:
 	int rows_;
@@ -251,13 +253,12 @@ namespace equelleCUDA {
 	// Check that lhs*rhs is legal, assign this with correct rows_ and cols_. 
 	// It returns the inner size of the matrix multiplication.
 	int confirmMultSize(const CudaMatrix& lhs, const CudaMatrix& rhs);
-	// Check if the matrix is a transpose or not.
-	bool isTranspose() const;
 
 	CudaMatrix diagonalMultiply(const CudaMatrix& rhs) const;
 	
     }; // class CudaMatrix
     
+    std::ostream& operator<<(std::ostream& output, const CudaMatrix& mat);
     
     //! Matrix + Matrix operator
     /*!
