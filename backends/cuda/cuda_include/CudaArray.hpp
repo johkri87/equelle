@@ -153,8 +153,8 @@ namespace equelleCUDA {
     
     }; // class CudaArray
 
-
-
+    CudaArray multiplyAdd(const CudaArray& a, const CudaArray& b, const CudaArray& c);
+    CudaArray multiplyAdd(const CudaArray& a, const Scalar b, const CudaArray& c);
 
     //! Functions closely related to the CudaArray class
     namespace wrapCudaArray {
@@ -402,11 +402,27 @@ namespace equelleCUDA {
 						const double rhs,
 						const int size);
 
+	__global__ void multiplyAddKernel( double* a_out,
+	                                   const double* b,
+	                                   const double* c,
+	                                   const int size);
+
+
+	__global__ void multiplyAddKernelSeparate( double* a_out,
+                                               const double* b,
+                                               const double* c,
+                                               const int size);
+
+	__global__ void multiplyAddKernel( double* a_out,
+                                       const double b,
+                                       const double* c,
+                                       const int size);
     } // namespace wrapCudaArray
 	
 	
     // -------------- Operation overloading ------------------- //
-    
+
+    // Overloading of stream operator. It outputs the CudaArray values. Useful for debugging.
 	std::ostream& operator<<(std::ostream& output, const CudaArray& arr);
 
     // Overloading of operator -

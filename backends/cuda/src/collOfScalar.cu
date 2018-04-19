@@ -222,6 +222,29 @@ double CollOfScalar::reduce(const EquelleReduce reduce) const {
 
 
 // ------- ARITHMETIC OPERATIONS --------------------
+CollOfScalar equelleCUDA::multiplyAdd(const CollOfScalar& a, const Scalar b,
+                                      const CollOfScalar& c)
+{
+    CudaArray val = multiplyAdd(a.val_, b, c.val_);
+    if (a.autodiff_ || c.autodiff_) {
+    CudaMatrix der = multiplyAdd(a.der_, b, c.der_);
+    return CollOfScalar(val, der);
+    }
+    return CollOfScalar(val);
+}
+
+CollOfScalar equelleCUDA::multiplyAdd(const CollOfScalar& a, const CollOfScalar& b,
+                                      const CollOfScalar& c)
+{
+    CudaArray val = multiplyAdd(a.val_, b.val_, c.val_);
+    if (a.autodiff_ || b.autodiff_ || c.autodiff_) {
+        CudaMatrix diag_u(a.val_);
+        CudaMatrix diag_v(b.val_);
+        CudaMatrix der = multiplyAdd(diag_v, a.der_, diag_u*b.der_) + c.der_;
+        return CollOfScalar(val, der);
+    }
+    return CollOfScalar(val);
+}
 
 CollOfScalar equelleCUDA::operator+ (const CollOfScalar& lhs,
 				     const CollOfScalar& rhs)

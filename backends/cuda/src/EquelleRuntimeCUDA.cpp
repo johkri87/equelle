@@ -274,6 +274,49 @@ CollOfScalar EquelleRuntimeCUDA::gradient_matrix( const CollOfScalar& cell_scala
     return devOps_.grad() * cell_scalarfield;
 }
 
+CollOfScalar EquelleRuntimeCUDA::multiplyAdd(const CollOfScalar& a, const CollOfScalar& b, const CollOfScalar& c)
+{
+    return equelleCUDA::multiplyAdd(a,b,c);
+}
+
+CollOfScalar EquelleRuntimeCUDA::multiplyAdd(const CollOfScalar& a, const Scalar b, const CollOfScalar& c)
+{
+    return equelleCUDA::multiplyAdd(a,b,c);
+}
+
+CollOfScalar EquelleRuntimeCUDA::multiplyAdd(const Scalar b, const CollOfScalar& a, const CollOfScalar& c)
+{
+    return equelleCUDA::multiplyAdd(a,b,c);
+}
+
+CudaMatrix EquelleRuntimeCUDA::multiplyAdd(const CudaMatrix& a,
+                       const CudaMatrix& b,
+                       const CudaMatrix& c)
+{
+    return equelleCUDA::multiplyAdd(a,b,c);
+}
+
+CudaArray EquelleRuntimeCUDA::multiplyAdd(const CudaMatrix& a,
+                       const CudaArray& b,
+                       const CudaArray& c)
+{
+    return equelleCUDA::multiplyAdd(a,b,c);
+}
+
+CudaMatrix EquelleRuntimeCUDA::multiplyAdd(const CudaMatrix& a,
+                   const Scalar b,
+                   const CudaMatrix& c)
+{
+    return equelleCUDA::cudaMatrixSum(c,a,b);
+}
+
+CudaMatrix EquelleRuntimeCUDA::multiplyAdd(const Scalar b,
+                   const CudaMatrix& a,
+                   const CudaMatrix& c)
+{
+    return equelleCUDA::cudaMatrixSum(c,a,b);
+}
+
 CollOfScalar EquelleRuntimeCUDA::divergence(const CollOfScalar& face_fluxes) const {
     
     // If the size is not the same as the number of faces, then the input is

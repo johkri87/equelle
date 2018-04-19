@@ -388,6 +388,10 @@ namespace equelleCUDA {
 	*/
 	friend CollOfBool operator!=(const Scalar lhs, const CollOfScalar& rhs);
 
+	friend CollOfScalar multiplyAdd(const CollOfScalar& a, const Scalar b,
+									const CollOfScalar& c);
+	friend CollOfScalar multiplyAdd(const CollOfScalar& a, const CollOfScalar& b,
+									const CollOfScalar& c);
 
 
 	// ----------- Boolean operations as friends end ---------------
@@ -412,6 +416,11 @@ namespace equelleCUDA {
     */
     CollOfScalar operator*(const CudaMatrix& mat, const CollOfScalar& coll);
     
+
+	CollOfScalar multiplyAdd(const CollOfScalar& a, const Scalar b,
+                 			 const CollOfScalar& c);
+	CollOfScalar multiplyAdd(const CollOfScalar& a, const CollOfScalar& b,
+                     		 const CollOfScalar& c);
     
 
 

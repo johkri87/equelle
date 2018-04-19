@@ -158,13 +158,30 @@ public:
      */
     CollOfScalar gradient_matrix(const CollOfScalar& cell_scalarfield) const;
 
+    /// Multiply-add with no optimizations (no real fusion).
+    /*!
+      No implemented optimizations. The function performs a * b + c and
+      prints a message that an implementation of multiplyAdd might be missing.
+    */
     template <typename T, typename U, typename V>
     V multiplyAdd(const T& a, const U& b, const V& c);
 
+
+    CollOfScalar multiplyAdd(const CollOfScalar& a, const CollOfScalar& b, const CollOfScalar& c);
+    CollOfScalar multiplyAdd(const Scalar b, const CollOfScalar& a, const CollOfScalar& c);
+    CollOfScalar multiplyAdd(const CollOfScalar& a, const Scalar b, const CollOfScalar& c);
+    CudaMatrix multiplyAdd(const CudaMatrix& a, const CudaMatrix& b, const CudaMatrix& c);
+    CudaMatrix multiplyAdd(const CudaMatrix& a, const Scalar b, const CudaMatrix& c);
+    CudaMatrix multiplyAdd(const Scalar b, const CudaMatrix& a, const CudaMatrix& c);
+    CudaArray multiplyAdd(const CudaMatrix& a, const CudaArray& b, const CudaArray& c);
+
+    /// Multiply-divide with no optimizations (no real fusion).
+    /*!
+      No implemented optimizations. The function performs a * b /    c and
+      prints a message that an implementation of multiplyDivide might be missing.
+     */
     template <typename T, typename U, typename V>
-    V multiplyDivide(const T& a,
-                     const U& b,
-                     const V& c);
+    V multiplyDivide(const T& a, const U& b, const V& c);
 
     /// Discrete divergence in every cell
     /*!

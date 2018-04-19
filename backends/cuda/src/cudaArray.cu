@@ -434,6 +434,23 @@ CollOfBool equelleCUDA::operator!=(const Scalar lhs, const CudaArray& rhs) {
     return (rhs != lhs);
 }
 
+CudaArray equelleCUDA::multiplyAdd(const CudaArray& a, const CudaArray& b, const CudaArray& c)
+{
+    kernelSetup s = a.setup();
+    CudaArray out(a);
+    multiplyAddKernel<<<s.grid, s.block>>>(out.data(), b.data(), c.data(), out.size());
+    return out;
+
+}
+
+CudaArray equelleCUDA::multiplyAdd(const CudaArray& a, const Scalar b, const CudaArray& c)
+{
+    kernelSetup s = a.setup();
+    CudaArray out(a);
+    multiplyAddKernel<<<s.grid, s.block>>>(out.data(), b, c.data(), out.size());
+    return out;
+}
+
 /////////////////////////////////////////////////////////////////////////////////
 /// ----------------------- KERNEL IMPLEMENTATIONS: ---------------------------//
 /////////////////////////////////////////////////////////////////////////////////
@@ -613,7 +630,25 @@ __global__ void wrapCudaArray::comp_collNEscal_kernel( bool* out,
     }
 }
 
+__global__ void wrapCudaArray::multiplyAddKernel( double* a_out,
+                                                  const double* b,
+                                                  const double* c,
+                                                  const int size) {
+    const int index = myID();
+    if ( index < size ) {
+        a_out[index] = a_out[index] * b[index] + c[index];
+    }
+}
 
+__global__ void wrapCudaArray::multiplyAddKernel( double* a_out,
+                                                  const double b,
+                                                  const double* c,
+                                                  const int size) {
+    const int index = myID();
+    if ( index < size ) {
+        a_out[index] = a_out[index] * b + c[index];
+    }
+}
 
 
 // Transforming CollOfBool

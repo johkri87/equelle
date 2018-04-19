@@ -624,6 +624,45 @@ int countActualNonZeros(CudaMatrix mat) {
 
 // --------------------- OVERLOADING OF OPERATORS -------------------------- //
 
+CudaArray equelleCUDA::multiplyAdd(const CudaMatrix& a, const CudaArray& b, const CudaArray& c)
+{
+  int resultingVectorSize = 0;
+  if ( !a.isTranspose() ) { // NOT transposed
+    if ( a.cols_ != b.size() ) {
+        OPM_THROW(std::runtime_error, "Error in matrix * vector operation as matrix is of size " <<
+                                       a.rows_ << " by " << a.cols_ << " and the vector of size "<<
+                                       b.size());
+    }
+
+    // Check that sizes match - Depend on transpose matrix or not.
+    resultingVectorSize = a.rows_;
+  }
+  else { // matrix IS transposed
+    if ( a.rows_ != b.size() ) {
+        OPM_THROW(std::runtime_error, "Error in transposed matrix * vector operation as matrix is of size " <<
+                                      a.cols_ << " by " << a.rows_ << " and the vector of size " << b.size());
+    }
+    resultingVectorSize = a.cols_;
+  }
+
+  // Call cusparse matrix-vector operation:
+  // y = alpha*op(A)*x + beta*y
+  // with alpha=1, beta=1, op=non_transpose
+  CudaArray out(resultingVectorSize);
+  const double alpha = 1.0;
+  const double beta = 1.0;
+  a.sparseStatus_ = cusparseDcsrmv( CUSPARSE,
+        a.operation_,
+        a.rows_, a.cols_, a.nnz_,
+        &alpha, a.description_,
+        a.csrVal_, a.csrRowPtr_, a.csrColInd_,
+        b.data(), &beta,
+        out.data());
+  a.checkError_("cusparseDcsrmv() in multiplyAdd(CudaMatrix, CudaArray, CudaArray)");
+  return out;
+}
+
+
 std::ostream& equelleCUDA::operator<<(std::ostream& output, const CudaMatrix& mat)
 {
   //hostMat hmat = mat.toHost();
@@ -767,6 +806,88 @@ CudaMatrix equelleCUDA::cudaMatrixSum(const CudaMatrix& lhs,
 } // cudaMatrixSum
 
 
+CudaMatrix equelleCUDA::multiplyAdd(const CudaMatrix& a, const CudaMatrix& b, const CudaMatrix& c) {
+
+    if ( a.isEmpty() || b.isEmpty() ) {
+        return c;
+    }
+    
+    if ( a.diagonal_ ) {
+      return a.diagonalMultiply(b) + c;
+    }
+
+    return equelleCUDA::gemm2(a,b,c,1.0,1.0);
+}
+
+
+// gemm2 performs the operation D = alpha ∗ A ∗ B + beta ∗ C
+CudaMatrix equelleCUDA::gemm2(const CudaMatrix& A, const CudaMatrix& B, const CudaMatrix& C, double alpha, double beta)
+{
+
+    // Create an empty matrix. Need to set rows, cols, nnz, and allocate arrays!
+    CudaMatrix out;
+    // Legal matrix sizes depend on whether the matrices are transposed or not!
+    int innerSize = out.confirmMultSize(A, B);
+
+    // Set up cuSPARSE
+    csrgemm2Info_t info;
+    cusparseSetPointerMode(CUSPARSE, CUSPARSE_POINTER_MODE_HOST);
+    cusparseCreateCsrgemm2Info(&info);
+
+    // Allocate buffer
+    size_t bufferSize;
+    void* buffer = NULL;
+    cusparseDcsrgemm2_bufferSizeExt(CUSPARSE, out.rows_, out.cols_, innerSize, &alpha,
+                                     A.description_, A.nnz_, A.csrRowPtr_, A.csrColInd_,
+                                     B.description_, B.nnz_, B.csrRowPtr_, B.csrColInd_,
+                                     &beta,
+                                     C.description_, C.nnz_, C.csrRowPtr_, C.csrColInd_,
+                                     info, &bufferSize);
+    cudaMalloc(&buffer, bufferSize);
+    cudaMalloc((void**)&out.csrRowPtr_, sizeof(int)*(out.rows_+1));
+    // Compute NNZ
+    int* nnzTotalDevHostPtr = &out.nnz_;
+    cusparseXcsrgemm2Nnz(CUSPARSE,
+                         out.rows_, out.cols_, innerSize,
+                         A.description_, A.nnz_, A.csrRowPtr_, A.csrColInd_,
+                         B.description_, B.nnz_, B.csrRowPtr_, B.csrColInd_,
+                         C.description_, C.nnz_, C.csrRowPtr_, C.csrColInd_,
+                         out.description_, out.csrRowPtr_,
+                         nnzTotalDevHostPtr, info, buffer );
+    if (NULL != nnzTotalDevHostPtr){
+        out.nnz_ = *nnzTotalDevHostPtr;
+    }else{
+        int baseC;
+        cudaMemcpy(&out.nnz_, out.csrRowPtr_+out.rows_, sizeof(int), cudaMemcpyDeviceToHost);
+        cudaMemcpy(&baseC, out.csrRowPtr_, sizeof(int), cudaMemcpyDeviceToHost);
+        out.nnz_ -= baseC;
+    }
+
+    // Allocate memory for output matrix
+    cudaMalloc((void**)&out.csrColInd_, sizeof(int)*out.nnz_);
+    cudaMalloc((void**)&out.csrVal_, sizeof(double)*out.nnz_);
+
+    // Perform the gemm2 operation
+    // D = alpha ∗ A ∗ B + beta ∗ C
+    cusparseDcsrgemm2(CUSPARSE, out.rows_, out.cols_, innerSize, &alpha, 
+                      A.description_, A.nnz_, A.csrVal_, A.csrRowPtr_, A.csrColInd_, 
+                      B.description_, B.nnz_, B.csrVal_, B.csrRowPtr_, B.csrColInd_,
+                      &beta,
+                      C.description_, C.nnz_, C.csrVal_, C.csrRowPtr_, C.csrColInd_,
+                      out.description_, out.csrVal_, out.csrRowPtr_, out.csrColInd_,
+                      info, buffer);
+
+    // Cleanup
+    cusparseDestroyCsrgemm2Info(info);
+
+    return out;
+}
+
+
+CudaMatrix equelleCUDA::multiplyAdd(const CudaMatrix& a, const Scalar b, const CudaMatrix& c) {
+    return cudaMatrixSum(a,c,b);
+}
+
 
 CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs) {
 
@@ -889,7 +1010,6 @@ CudaArray equelleCUDA::operator*(const CudaMatrix& mat, const CudaArray& vec) {
 }
 
 
-
 // Scalar multiplications with matrix:
 CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const Scalar rhs) {
     return (rhs * lhs);
@@ -912,7 +1032,6 @@ CudaMatrix equelleCUDA::operator*(const Scalar lhs, const CudaMatrix& rhs) {
 CudaMatrix equelleCUDA::operator-(const CudaMatrix& arg) {
     return -1.0*arg;
 }
-
 
 
 // Diagonal multiplyer:

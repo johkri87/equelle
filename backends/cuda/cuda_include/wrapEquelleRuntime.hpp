@@ -226,9 +226,12 @@ namespace equelleCUDA
 	__global__ void sqrtKernel( double* out, const int size);
 	
 
-    } // namespace wrapEquelleRuntimeCUDA
-    
+	// ----------- FUSED OPERATORS -----------
 
+
+	CollOfScalar multiplyAdd(const CollOfScalar& a, const CollOfScalar& b, const CollOfScalar& c);
+
+    } // namespace wrapEquelleRuntimeCUDA
 } // namespace equelleCUDA
 
 #endif // EQUELLE_WRAP_EQUELLERUNTIME_HEADER_INCLUDED

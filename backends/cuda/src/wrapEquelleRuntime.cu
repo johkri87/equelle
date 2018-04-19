@@ -285,4 +285,17 @@ __global__ void wrapEquelleRuntimeCUDA::sqrtKernel(double* out, const int size) 
 }
 
 
+// -------- FUSED OPERATORS --------
+CollOfScalar wrapEquelleRuntimeCUDA::multiplyAdd(const CollOfScalar& a, const CollOfScalar& b, const CollOfScalar& c) {
+	CudaArray val = a.value();
+	kernelSetup s = a.setup();
+	wrapCudaArray::multiplyAddKernel<<<s.grid, s.block>>>(val.data(), b.data(), c.data(), a.size());
+    if ( a.useAutoDiff() || b.useAutoDiff() || c.useAutoDiff() ) {
+    CudaMatrix diag_u(a.value());
+    CudaMatrix diag_v(b.value());
+    CudaMatrix der = (diag_v*a.derivative() + diag_u*b.derivative()) + c.derivative();
 
+    return CollOfScalar(val, der);
+    }
+    return CollOfScalar(val);
+}

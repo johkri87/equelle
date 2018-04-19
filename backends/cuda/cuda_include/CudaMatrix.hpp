@@ -218,8 +218,13 @@ namespace equelleCUDA {
 	friend CudaMatrix cudaMatrixSum(const CudaMatrix& lhs,
 					const CudaMatrix& rhs,
 					const double beta);
+	friend CudaMatrix gemm2(const CudaMatrix& A, const CudaMatrix& B, const CudaMatrix& C, double alpha, double beta);
+  	friend CudaMatrix multiplyAdd(const CudaMatrix& a, const CudaMatrix& b, const CudaMatrix& c);
+  	friend CudaArray  multiplyAdd(const CudaMatrix& a, const CudaArray& b, const CudaArray& c);
+  	friend CudaMatrix multiplyAdd(const CudaMatrix& a, const Scalar b, const CudaMatrix& c);
+
 	friend CudaMatrix operator*(const CudaMatrix& lhs, const CudaMatrix& rhs);
-	friend CudaArray operator*(const CudaMatrix& mat, const CudaArray& vec);
+	friend CudaArray  operator*(const CudaMatrix& mat, const CudaArray& vec);
 	friend CudaMatrix operator*(const CudaMatrix& lhs, const Scalar rhs);
 	friend CudaMatrix operator*(const Scalar lhs, const CudaMatrix& rhs);
 	friend CudaMatrix operator-(const CudaMatrix& arg);
@@ -258,6 +263,10 @@ namespace equelleCUDA {
 	
     }; // class CudaMatrix
     
+  	CudaMatrix multiplyAdd(const CudaMatrix& a, const CudaMatrix& b, const CudaMatrix& c);
+  	CudaArray  multiplyAdd(const CudaMatrix& a, const CudaArray& b, const CudaArray& c);
+  	CudaMatrix multiplyAdd(const CudaMatrix& a, const Scalar b, const CudaMatrix& c);
+
     std::ostream& operator<<(std::ostream& output, const CudaMatrix& mat);
     
     //! Matrix + Matrix operator
@@ -297,6 +306,7 @@ namespace equelleCUDA {
     CudaMatrix cudaMatrixSum( const CudaMatrix& lhs,
 			      const CudaMatrix& rhs,
 			      const double beta);
+    CudaMatrix gemm2(const CudaMatrix& A, const CudaMatrix& B, const CudaMatrix& C, double alpha, double beta);
 
     //! Matrix * Matrix operator
     /*!
