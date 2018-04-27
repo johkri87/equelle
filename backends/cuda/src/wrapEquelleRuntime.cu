@@ -81,7 +81,6 @@ CollOfScalar wrapEquelleRuntimeCUDA::trinaryIfWrapper( const CollOfBool& predica
 }
 
 
-// For indicis
 
 __global__ void wrapEquelleRuntimeCUDA::trinaryIfKernel( double* out,
 							 const bool* predicate,

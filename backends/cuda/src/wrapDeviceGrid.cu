@@ -70,10 +70,6 @@ CollOfScalar wrapDeviceGrid::extendToFull( const CollOfScalar& in_data,
 }
 
 
-
-
-
-
 CollOfScalar wrapDeviceGrid::extendToSubset( const CollOfScalar& inData,
 					     const thrust::device_vector<int>& from_set,
 					     const thrust::device_vector<int>& to_set,

@@ -212,6 +212,8 @@ namespace equelleCUDA {
 	//! Copies the device memory to host memory in a hostMat struct.
 	hostMat toHost() const;
 	
+	std::string csrToString();
+
 	//! Returns the transpose of the matrix.
 	/*!
 	  Uses the cusparse routine to convert between row-major and column-major

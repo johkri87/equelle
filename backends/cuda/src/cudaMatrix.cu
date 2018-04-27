@@ -502,6 +502,21 @@ int* CudaMatrix::csrColInd() {
 
 
 
+std::string CudaMatrix::csrToString()
+{
+  hostMat hmat = this->toHost();
+  std::string output;
+  for (auto i = 0; i < rows_+1; i++){
+    if( hmat.rowPtr[i] != 0 ) {
+        std::cout << i << ": " << std::to_string(hmat.rowPtr[i]) + "\n";
+    }
+    //output += std::to_string(hmat.vals[i]) + "\n";
+    //std::cout << "(" << std::to_string(hmat.vals[i]) << ", " << std::to_string(hmat.colInd[i]) << "\t";
+    //output += std::to_string(hmat.colInd[i]) + "\n";
+  }
+  return output;
+}
+
 // Copy to host:
 hostMat CudaMatrix::toHost() const {
     if ( (csrVal_ == 0) || (csrRowPtr_ == 0) || (csrColInd_ == 0) ) {
