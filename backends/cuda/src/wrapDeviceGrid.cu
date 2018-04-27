@@ -24,41 +24,55 @@ using namespace equelleCUDA;
 CollOfScalar wrapDeviceGrid::extendToFull( const CollOfScalar& in_data,
 					   const thrust::device_vector<int>& from_set,
 					   const int full_size) {
- 
-    
     // setup how many threads/blocks we need:
     kernelSetup s(full_size);
     
     // create a vector of size number_of_faces_:
-    //thrust::device_vector<double> out(full_size);
     CudaArray val(full_size);
-    //double* out_ptr = thrust::raw_pointer_cast( &out[0] );
     const int* from_ptr = thrust::raw_pointer_cast( &from_set[0]);
-    //wrapDeviceGrid::extendToFullKernel<<<grid,block>>>( out.data(),
-    //							from_ptr,
-    //							from_set.size(),
-    //							in_data.data(),
-    //							full_size);
-    wrapDeviceGrid::extendToFullKernel_step1<<<s.grid, s.block>>>( val.data(),
-								   full_size );
-    wrapDeviceGrid::extendToFullKernel_step2<<<s.grid, s.block>>>( val.data(),
-								   from_ptr,
-								   from_set.size(),
-								   in_data.data());
-      
+
+    // Extend values
+    wrapDeviceGrid::extendToFullKernel_step1<<<s.grid, s.block>>>( val.data(), full_size );
+    wrapDeviceGrid::extendToFullKernel_step2<<<s.grid, s.block>>>( val.data(), from_ptr,
+                                                                   from_set.size(), in_data.data());
+    cudaDeviceSynchronize();
     if (in_data.useAutoDiff() ) {
-	CudaMatrix extendMatrix = CudaMatrix(from_set, full_size).transpose();
-	return CollOfScalar(val, extendMatrix * in_data.derivative());
+       CudaMatrix inMat(std::move(in_data.derivative()));
+       CudaMatrix der(full_size, inMat.cols(), inMat.nnz());
+       kernelSetup sNnz(inMat.nnz());
+       wrapDeviceGrid::extendToFullKernel_step1<<<sNnz.grid, sNnz.block>>>( der.csrVal(), inMat.nnz() );
+       cudaDeviceSynchronize();
+
+       kernelSetup sRptr(from_set.size());
+       wrapDeviceGrid::extendToFullKernel_step1<<<s.grid, s.block>>>( der.csrRowPtr(), full_size+1 );
+       cudaDeviceSynchronize();
+       wrapDeviceGrid::extendToFullKernel_step2<<<sRptr.grid, sRptr.block>>>( der.csrRowPtr(), from_ptr,
+                                                                   from_set.size(), inMat.csrRowPtr());
+       cudaDeviceSynchronize();
+        wrapDeviceGrid::extendToFullKernel_buildRowPtr<<<sRptr.grid, sRptr.block>>>( der.csrRowPtr(), from_ptr,
+                                                                   from_set.size(), inMat.csrRowPtr(), full_size);
+       cudaError_t error = cudaMemcpy(der.csrColInd(),inMat.csrColInd(), inMat.nnz()*sizeof(int),cudaMemcpyDeviceToDevice);
+       if (error != cudaSuccess){
+            std::cout << "Memcpy csrColInd failed in wrapDevideGrid::extendToFull." << std::endl;
+       }
+       error = cudaMemcpy(der.csrVal(),inMat.csrVal(), inMat.nnz()*sizeof(double),cudaMemcpyDeviceToDevice);
+       if (error != cudaSuccess){
+            std::cout << "Memcpy csrVal() failed in wrapDevideGrid::extendToFull." << std::endl;
+       }
+       cudaDeviceSynchronize();
+
+       // Old code
+       // CudaMatrix extendMatrix = CudaMatrix(from_set, full_size).transpose();
+       // return CollOfScalar(val, extendMatrix * in_data.derivative());
+       return CollOfScalar(val, der);
     }
-    else { // no AutoDiff 
-	return CollOfScalar(val);
-    }
-    
-    
-    // Create the transpose of the restrict matrix
-    //CudaMatrix extendMatrix = CudaMatrix(from_set, full_size).transpose();
-    //return extendMatrix * in_data;
+    return CollOfScalar(val);
 }
+
+
+
+
+
 
 CollOfScalar wrapDeviceGrid::extendToSubset( const CollOfScalar& inData,
 					     const thrust::device_vector<int>& from_set,
@@ -69,15 +83,29 @@ CollOfScalar wrapDeviceGrid::extendToSubset( const CollOfScalar& inData,
 
 }
 
+
+// Set all values to 0
 __global__ void wrapDeviceGrid::extendToFullKernel_step1( double* outData,
 							  const int out_size)
 {
     const int outIndex = myID();
     if ( outIndex < out_size ) {
-	outData[outIndex] = 0;
+	   outData[outIndex] = 0.0;
     }
 }
 
+// Set all values to 0
+__global__ void wrapDeviceGrid::extendToFullKernel_step1( int* outData,
+                              const int out_size)
+{
+    const int outIndex = myID();
+    if ( outIndex < out_size ) {
+       outData[outIndex] = 0;
+    }
+}
+
+
+// Place old values in the new domain
 __global__ void wrapDeviceGrid::extendToFullKernel_step2( double* outData,
 							  const int* from_set,
 							  const int from_size,
@@ -102,6 +130,41 @@ __global__ void wrapDeviceGrid::extendToFullKernel_step2( double* outData,
     const int outIndex = myID();
     if ( outIndex < from_size ) {
 	outData[from_set[outIndex]] = inData[outIndex];
+    }
+}
+
+// Place old values in the new domain
+__global__ void wrapDeviceGrid::extendToFullKernel_step2( int* outData,
+                              const int* from_set,
+                              const int from_size,
+                              const int* inData)
+{
+
+    const int outIndex = myID();
+    if ( outIndex < from_size ) {
+        outData[from_set[outIndex]+1] = inData[outIndex+1];
+    }
+}
+
+// Build the csr pointer by filling in values for the empty areas in the new extended domain.
+__global__ void wrapDeviceGrid::extendToFullKernel_buildRowPtr( int* outData,
+                              const int* from_set,
+                              const int from_size,
+                              const int* inData,
+                              const int full_size)
+{
+    const int outIndex = myID();
+    if ( outIndex < from_size-1 ) {
+        int diff = from_set[outIndex+1] - from_set[outIndex];
+        for( int i = 1; i < diff+1; i++ ){
+            outData[from_set[outIndex]+i] = inData[outIndex+1];
+        }
+        if ( outIndex == from_size-2 ){
+            int lastDiff = (full_size-from_set[from_size-1]);
+            for( int i = 1; i <= lastDiff; i++ ){
+                outData[from_set[from_size-1]+i] = inData[from_size];
+            }
+        }
     }
 }
 
