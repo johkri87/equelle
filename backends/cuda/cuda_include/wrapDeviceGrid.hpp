@@ -102,6 +102,9 @@ namespace equelleCUDA
 	__global__ void extendToFullKernel_step1( double* outData,
 						  const int fullSize);
 
+	__global__ void extendToFullKernel_step1( int* outData,
+						  const int fullSize);
+
 	//! Kernel for extend a subset to a full set - step 2
 	/*!
 	  This operation maps the data from inData to the indices given in from_set
@@ -140,6 +143,16 @@ namespace equelleCUDA
 						  const int from_size,
 						  const double* inData);
 
+	__global__ void extendToFullKernel_step2( int* outData,
+						  const int* from_set,
+						  const int from_size,
+						  const int* inData);
+
+	__global__ void extendToFullKernel_buildRowPtr( int* outData,
+						  const int* from_set,
+						  const int from_size,
+						  const int* inData,
+						  const int full_size);
 
 	//! On operator from a complete domain to a subset.
 	/*!
