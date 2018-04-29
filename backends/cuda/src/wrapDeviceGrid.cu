@@ -7,6 +7,8 @@
 
 #include <thrust/device_vector.h>
 #include <thrust/detail/raw_pointer_cast.h>
+#include <thrust/scan.h>
+#include <thrust/fill.h>
 
 #include "DeviceGrid.hpp"
 #include "wrapDeviceGrid.hpp"
@@ -24,49 +26,52 @@ using namespace equelleCUDA;
 CollOfScalar wrapDeviceGrid::extendToFull( const CollOfScalar& in_data,
 					   const thrust::device_vector<int>& from_set,
 					   const int full_size) {
-    // setup how many threads/blocks we need:
+    // Setup how many threads/blocks we need:
     kernelSetup s(full_size);
-    
-    // create a vector of size number_of_faces_:
+    // Create a vector of size number_of_faces_:
     CudaArray val(full_size);
     const int* from_ptr = thrust::raw_pointer_cast( &from_set[0]);
-
     // Extend values
-    wrapDeviceGrid::extendToFullKernel_step1<<<s.grid, s.block>>>( val.data(), full_size );
+    thrust::fill(thrust::device,val.data(),val.data()+full_size, 0.0);
     wrapDeviceGrid::extendToFullKernel_step2<<<s.grid, s.block>>>( val.data(), from_ptr,
                                                                    from_set.size(), in_data.data());
-    cudaDeviceSynchronize();
     if (in_data.useAutoDiff() ) {
-       CudaMatrix inMat(std::move(in_data.derivative()));
-       CudaMatrix der(full_size, inMat.cols(), inMat.nnz());
-       kernelSetup sNnz(inMat.nnz());
-       wrapDeviceGrid::extendToFullKernel_step1<<<sNnz.grid, sNnz.block>>>( der.csrVal(), inMat.nnz() );
+       // Set up output matrix der
+       CudaMatrix tempMat(in_data.derivative()); // Move the rvalue from derivative() into a temp object
+       CudaMatrix der(full_size, tempMat.cols(), tempMat.nnz());
+
+       // Copy csrColInd, csrVal and fill csrRowPtr with zeroes
+       thrust::copy(thrust::device, tempMat.csrColInd(), tempMat.csrColInd()+tempMat.nnz(), der.csrColInd());
+       thrust::copy(thrust::device, tempMat.csrVal(), tempMat.csrVal()+tempMat.nnz(), der.csrVal());
+       thrust::fill(thrust::device,der.csrRowPtr(),der.csrRowPtr()+der.rows()+1, 0);
        cudaDeviceSynchronize();
 
+       // Map values in set being extended to the new domain
        kernelSetup sRptr(from_set.size());
-       wrapDeviceGrid::extendToFullKernel_step1<<<s.grid, s.block>>>( der.csrRowPtr(), full_size+1 );
-       cudaDeviceSynchronize();
        wrapDeviceGrid::extendToFullKernel_step2<<<sRptr.grid, sRptr.block>>>( der.csrRowPtr(), from_ptr,
-                                                                   from_set.size(), inMat.csrRowPtr());
-       cudaDeviceSynchronize();
-        wrapDeviceGrid::extendToFullKernel_buildRowPtr<<<sRptr.grid, sRptr.block>>>( der.csrRowPtr(), from_ptr,
-                                                                   from_set.size(), inMat.csrRowPtr(), full_size);
-       cudaError_t error = cudaMemcpy(der.csrColInd(),inMat.csrColInd(), inMat.nnz()*sizeof(int),cudaMemcpyDeviceToDevice);
-       if (error != cudaSuccess){
-            std::cout << "Memcpy csrColInd failed in wrapDevideGrid::extendToFull." << std::endl;
-       }
-       error = cudaMemcpy(der.csrVal(),inMat.csrVal(), inMat.nnz()*sizeof(double),cudaMemcpyDeviceToDevice);
-       if (error != cudaSuccess){
-            std::cout << "Memcpy csrVal() failed in wrapDevideGrid::extendToFull." << std::endl;
-       }
+                                                                   from_set.size(), tempMat.csrRowPtr());
        cudaDeviceSynchronize();
 
-       // Old code
-       // CudaMatrix extendMatrix = CudaMatrix(from_set, full_size).transpose();
-       // return CollOfScalar(val, extendMatrix * in_data.derivative());
+       // Fill in the gaps of the rowPtr
+       // {0, 0, 2, 0, 0, 4, 0, 5} becomes 
+       // {0, 0, 2, 2, 2, 4, 4, 5}
+       thrust::maximum<int> binary_op;
+       thrust::inclusive_scan(thrust::device, der.csrRowPtr(), der.csrRowPtr()+der.rows()+1, der.csrRowPtr(), binary_op);
+       cudaDeviceSynchronize();
        return CollOfScalar(val, der);
     }
     return CollOfScalar(val);
+}
+
+
+// Set all values to 0
+__global__ void wrapDeviceGrid::extendToFullKernel_step1( int* outData,
+                              const int out_size)
+{
+    const int outIndex = myID();
+    if ( outIndex < out_size ) {
+       outData[outIndex] = 0;
+    }
 }
 
 
@@ -87,16 +92,6 @@ __global__ void wrapDeviceGrid::extendToFullKernel_step1( double* outData,
     const int outIndex = myID();
     if ( outIndex < out_size ) {
 	   outData[outIndex] = 0.0;
-    }
-}
-
-// Set all values to 0
-__global__ void wrapDeviceGrid::extendToFullKernel_step1( int* outData,
-                              const int out_size)
-{
-    const int outIndex = myID();
-    if ( outIndex < out_size ) {
-       outData[outIndex] = 0;
     }
 }
 
@@ -135,13 +130,30 @@ __global__ void wrapDeviceGrid::extendToFullKernel_step2( int* outData,
                               const int from_size,
                               const int* inData)
 {
+    //
+    //      This kernel is sensitive to a race condition!
+    //      Each thread with outIndex < from_size performs 2 write operations,
+    //      but not to the same memory.
+    //      Hence, the we can have a kernel with 
+    //          outIndex = 3;
+    //    outData[3] = 0;
+    //    from_set[3] = 1000;
+    //    outData[1000] = 3.14;
+    //     And then another block starting a bit later with
+    //         outIndex = 1000;
+    //   outData[1000] = 0; // overwriting outIndex(3)'s correct value
+    //
+    //   Only way to sync between blocks is to call seperate kernels!
+    //
 
     const int outIndex = myID();
     if ( outIndex < from_size ) {
-        outData[from_set[outIndex]+1] = inData[outIndex+1];
+    outData[from_set[outIndex]+1] = inData[outIndex+1];
     }
 }
 
+
+// NOTE: Do not use this kernel. It is extremely slow and is kept for documentation purposes.
 // Build the csr pointer by filling in values for the empty areas in the new extended domain.
 __global__ void wrapDeviceGrid::extendToFullKernel_buildRowPtr( int* outData,
                               const int* from_set,
