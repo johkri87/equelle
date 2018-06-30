@@ -176,7 +176,9 @@ DeviceGrid::DeviceGrid( const UnstructuredGrid& grid)
 			      dimensions_ * number_of_faces_ * sizeof(double),
 			      cudaMemcpyHostToDevice );
     checkError_("cudaMemcpy(face_normals_) in DeviceGrid::DeviceGrid(UnstructuredGrid&)");
-
+    int cuda_grid = number_of_faces_ / 512;
+    normalizeAllFaceNormals<<<cuda_grid,512>>>(face_normals_, face_areas_, number_of_faces_, dimensions_);
+    cudaDeviceSynchronize();
 } // Constructor from OPMs UnstructuredGrid
 
 
@@ -273,7 +275,9 @@ DeviceGrid::DeviceGrid(const DeviceGrid& grid)
 			      dimensions_ * number_of_faces_ * sizeof(double),
 			      cudaMemcpyDeviceToDevice);
     checkError_("cudaMemcpy(face_normals_) in DeviceGrid::DeviceGrid(const DeviceGrid&)");
-    
+    int cuda_grid = number_of_faces_ / 512;
+    normalizeAllFaceNormals<<<cuda_grid,512>>>(face_normals_, face_areas_, number_of_faces_, dimensions_);
+    cudaDeviceSynchronize();
 } // copy constructor
 
 
@@ -861,5 +865,29 @@ __global__ void wrapDeviceGrid::faceNormalsKernel( double* out,
 	for( int i = 0; i < dimensions; i++) {
 	    out[vec_id*dimensions + i] = all_face_normals[face_id*dimensions + i];
 	}
+    }
+}
+
+// NORMALIZE FACE NORMALS
+__global__ void wrapDeviceGrid::normalizeAllFaceNormals( double* normals, 
+                                                         const double* face_areas_,
+                                                         const int num_vectors,
+                                                         const int dimensions)
+{
+    // One thread for each vector
+    const int face_id = myID();
+    if ( face_id < num_vectors ) {
+        if(dimensions == 1){
+            normals[face_id] /= face_areas_[face_id];
+        } else
+        if(dimensions == 2){
+            normals[face_id]   /= face_areas_[face_id];
+            normals[face_id*dimensions+1] /= face_areas_[face_id];
+        } else
+        if(dimensions == 3) {
+            normals[face_id*dimensions]   /= face_areas_[face_id];
+            normals[face_id*dimensions+1] /= face_areas_[face_id];
+            normals[face_id*dimensions+2] /= face_areas_[face_id];
+        }
     }
 }

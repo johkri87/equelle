@@ -615,6 +615,15 @@ namespace equelleCUDA
 				       const int dimensions);
 
 
+    //! Kernel for normalizing the normals of each face by the face area
+    /*!
+      This is needed because the grid that OPM generates has its faces scaled by the face areas.
+    */
+	__global__ void normalizeAllFaceNormals( double* normals, 
+                                             const double* face_areas_,
+                                             const int num_vectors,
+                                             const int dimensions);
+
     } // namespace wrapDeviceGrid
 
 
