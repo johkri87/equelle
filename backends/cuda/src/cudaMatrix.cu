@@ -713,7 +713,11 @@ std::ostream& equelleCUDA::operator<<(std::ostream& output, const CudaMatrix& ma
          }
          // After some operations, explicit zeroes are stored,
          // so we check the actual count.
+         hostMat hmat = mat.toHost();
+
          output << "\nActual NNZ: " << countActualNonZeros(mat)
+         << "\nMin value: " << *std::min_element(hmat.vals.begin(),hmat.vals.end())
+         << "\nMax value: " << *std::max_element(hmat.vals.begin(),hmat.vals.end())
          << "\nTransposed: " << (mat.isTranspose() ? "Yes" : "No"); 
          return output;
 }
