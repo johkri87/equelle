@@ -176,7 +176,7 @@ DeviceGrid::DeviceGrid( const UnstructuredGrid& grid)
 			      dimensions_ * number_of_faces_ * sizeof(double),
 			      cudaMemcpyHostToDevice );
     checkError_("cudaMemcpy(face_normals_) in DeviceGrid::DeviceGrid(UnstructuredGrid&)");
-    int cuda_grid = number_of_faces_ / 512;
+    int cuda_grid = (number_of_faces_+511) / 512;
     normalizeAllFaceNormals<<<cuda_grid,512>>>(face_normals_, face_areas_, number_of_faces_, dimensions_);
     cudaDeviceSynchronize();
 } // Constructor from OPMs UnstructuredGrid
@@ -275,7 +275,7 @@ DeviceGrid::DeviceGrid(const DeviceGrid& grid)
 			      dimensions_ * number_of_faces_ * sizeof(double),
 			      cudaMemcpyDeviceToDevice);
     checkError_("cudaMemcpy(face_normals_) in DeviceGrid::DeviceGrid(const DeviceGrid&)");
-    int cuda_grid = number_of_faces_ / 512;
+    int cuda_grid = (number_of_faces_+511) / 512;
     normalizeAllFaceNormals<<<cuda_grid,512>>>(face_normals_, face_areas_, number_of_faces_, dimensions_);
     cudaDeviceSynchronize();
 } // copy constructor
@@ -815,8 +815,6 @@ __global__ void wrapDeviceGrid::secondCellSubsetKernel( int* second,
 
 
 // NORM KERNEL
-
-
 __global__ void wrapDeviceGrid::normKernel( double* out,
 					    const int* indices,
 					    const int out_size,
@@ -867,6 +865,7 @@ __global__ void wrapDeviceGrid::faceNormalsKernel( double* out,
 	}
     }
 }
+
 
 // NORMALIZE FACE NORMALS
 __global__ void wrapDeviceGrid::normalizeAllFaceNormals( double* normals, 
