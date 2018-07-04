@@ -45,6 +45,7 @@ CudaArray::CudaArray(const int size)
 {
     cudaStatus_ = cudaMalloc( (void**)&dev_values_, size_*sizeof(double));
     checkError_("cudaMalloc in CudaArray::CudaArray(int)");
+    setUniformDouble<<<setup_.grid, setup_.block>>>( dev_values_, 0.0, size_);
 }
 
 CudaArray::CudaArray(const int size, const double value) 
