@@ -46,7 +46,7 @@ endif( CMAKE_BUILD_TYPE MATCHES "Debug")
 # make cuda part of run-time library
 # compile only, add to library later
 set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-set( CUDA_NVCC_FLAGS "-arch=sm_61 -std=c++11 -Xcudafe=--diag_suppress=boolean_controlling_expr_is_constant -Xcudafe=--diag_suppress=unrecognized_gcc_pragma -Xcudafe=--diag_suppress=code_is_unreachable --expt-relaxed-constexpr" CACHE STRING "nvcc flags" FORCE)
+set( CUDA_NVCC_FLAGS "-arch=sm_61" "-ftz=true" "-lineinfo" "-std=c++11" "-Xcudafe=--diag_suppress=boolean_controlling_expr_is_constant" "-Xcudafe=--diag_suppress=unrecognized_gcc_pragma" "-Xcudafe=--diag_suppress=code_is_unreachable" "--expt-relaxed-constexpr" CACHE STRING "nvcc flags" FORCE)
 cuda_compile ( equelle_cuda_cu ${cuda_cuda_src} ${cuda_cuda_inc} ${cuda_cuda_cuh} )
 
 
@@ -81,7 +81,10 @@ if (Boost_FOUND)
 			${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
 			equelle_cuda
 			equelle_rt
-			opmsimulators opmgrid opmparser opmcommon
+			/home/kristian/Equelle/opm/opm-common/build/lib/libopmcommon.a
+			/home/kristian/Equelle/opm/opm-simulators/build/lib/libopmsimulators.a
+			/home/kristian/Equelle/opm/opm-grid/build/lib/libopmgrid.a
+			/home/kristian/Equelle/opm/opm-parser/build/lib/libopmparser.a
 			boost_filesystem boost_system boost_regex
 			tinyxml ecl umfpack ${SUPERLU_LIB} dunecommon
 		)
