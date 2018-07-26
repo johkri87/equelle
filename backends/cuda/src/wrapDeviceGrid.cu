@@ -53,9 +53,9 @@ CollOfScalar wrapDeviceGrid::extendToFull( const CollOfScalar& in_data,
        thrust::maximum<int> binary_op;
        thrust::inclusive_scan(thrust::device, der.csrRowPtr(), der.csrRowPtr()+der.rows()+1, der.csrRowPtr(), binary_op);
        cudaDeviceSynchronize();
-       return CollOfScalar(val, der);
+       return CollOfScalar(std::move(val), std::move(der));
     }
-    return CollOfScalar(val);
+    return CollOfScalar(std::move(val));
 }
 
 
@@ -114,10 +114,10 @@ CollOfScalar wrapDeviceGrid::onFromFull( const CollOfScalar& inData,
 							  inData.data());
     if ( inData.useAutoDiff() ) {
 	CudaMatrix onMatrix(to_set, inData.size());
-	return CollOfScalar(val, onMatrix * inData.derivative());
+	return CollOfScalar(std::move(val), std::move(onMatrix * inData.derivative()));
     }
     else { // no AutoDiff
-	return CollOfScalar(val);
+	return CollOfScalar(std::move(val));
     }    
 }
 
