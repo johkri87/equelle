@@ -79,6 +79,19 @@ namespace equelleCUDA {
 	
 	CollOfScalar(CollOfScalar&& coll);
 
+
+	// Move constructor from CudaArray and CudaMatrix.
+	// Both val and der are moved.
+	CollOfScalar(CudaArray&& val, CudaMatrix&& der) noexcept;
+
+	// Move constructor from CudaArray and CudaMatrix
+	// Only der is moved. val is copied.
+	CollOfScalar(const CudaArray& val, CudaMatrix&& der) noexcept;
+
+	// Move constructor from CudaArray and CudaMatrix
+	// Only der is moved. val is copied.
+	CollOfScalar(CudaArray&& val, const CudaMatrix& der) noexcept;
+
 	//! Copy assignment operator
 	/*!
 	  Overload the assignment operator. Needed for the third line here:

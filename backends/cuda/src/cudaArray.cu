@@ -109,7 +109,7 @@ CudaArray::CudaArray(CudaArray&& coll)
       setup_(size_)
 {
     //std::cout << "CudaArray move constructor" << std::endl;
-    coll.dev_values_ = nullptr;
+    coll.dev_values_ = 0;
 }
 
 // Copy assignment operator
