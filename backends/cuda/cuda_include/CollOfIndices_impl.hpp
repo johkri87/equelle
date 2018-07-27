@@ -57,7 +57,7 @@ CollOfIndices<codim>::CollOfIndices(const int size)
       dev_vec_(0)
 {
     if (full_ != true ) {
-	OPM_THROW(std::runtime_error, "Creating non-full CollOfIndices without giving the collection\n");
+    OPM_THROW(std::runtime_error, "Creating non-full CollOfIndices without giving the collection\n");
     }
 }
 
@@ -72,7 +72,7 @@ CollOfIndices<codim>::CollOfIndices(const thrust::device_vector<int>& indices)
 
 template <int codim>
 CollOfIndices<codim>::CollOfIndices(thrust::device_vector<int>::iterator begin,
-			     thrust::device_vector<int>::iterator end)
+                 thrust::device_vector<int>::iterator end)
     : full_(false),
       size_(0),
       dev_vec_(begin, end)
@@ -150,20 +150,20 @@ const int* CollOfIndices<codim>::raw_pointer() const {
 
 template <int codim>
 void CollOfIndices<codim>::contains( CollOfIndices<codim> subset,
-				     const std::string& name) {
+                     const std::string& name) {
  
     if ( this->isFull() ) {
-	// Check first and last element
-	// Throws exception if subset is not contained.
-	wrapCollOfIndices::containsFull(subset.device_vector(), this->size(),
-					codim, name);
+    // Check first and last element
+    // Throws exception if subset is not contained.
+    wrapCollOfIndices::containsFull(subset.device_vector(), this->size(),
+                    codim, name);
      }
     else {
-	// Need to compare two CollOfIndices vectors:
-	// Throws an exception if subset is not contained.
-	wrapCollOfIndices::containsSubset(this->device_vector(),
-					  subset.device_vector(),
-					  codim, name);
+    // Need to compare two CollOfIndices vectors:
+    // Throws an exception if subset is not contained.
+    wrapCollOfIndices::containsSubset(this->device_vector(),
+                      subset.device_vector(),
+                      codim, name);
     }
 }
  

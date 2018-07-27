@@ -15,92 +15,85 @@
 
 namespace equelleCUDA {
 
-    //! Holds matrices needed for automatic differentiations for grid operations.
+//! Holds matrices needed for automatic differentiations for grid operations.
+/*!
+  This is a GPU version of a subset of the HelperOps class from the
+  opm/autodiff library. It is used so that OPM builds the matrices before the
+  initialization of the DeviceHelperOps. This struct therefore holds device copies
+  of some of the matrices created by OPM.
+*/
+class DeviceHelperOps {
+
+public:
+    //! Constructor
     /*!
-      This is a GPU version of a subset of the HelperOps class from the
-      opm/autodiff library. It is used so that OPM builds the matrices before the
-      initialization of the DeviceHelperOps. This struct therefore holds device copies
-      of some of the matrices created by OPM.
+      Input is Eigen sparse matrices as stored by the Opm::HelperOps class.
     */
-    class DeviceHelperOps {
-	
-    public:
+    DeviceHelperOps(const UnstructuredGrid& grid_in);
+
+    //! Destructor
+    ~DeviceHelperOps() { };
 
 
+    //! Extract for each face the difference of its adjacent cells' values (second - first)
+    /*! 
+      Matrix size: rows = number of internal faces, cols = number of cells.
+    */
+    const CudaMatrix& grad();
+    //! Extract for each cell the sum of its adjacent interior faces' (signed) values.
+    /*! 
+      Matrix size: rows = number of cells, cols = number of internal faces.
+    */
+    const CudaMatrix& div();
+    //! Extract for each cell the sum of all its adjacent faces' (signed) values.
+    /*!
+      Matrix size: rows = number of cells, cols = number of faces.
+    */
+    const CudaMatrix& fulldiv();
 
-	//! Constructor
-	/*!
-	  Input is Eigen sparse matrices as stored by the Opm::HelperOps class.
-	*/
-	DeviceHelperOps(const UnstructuredGrid& grid_in);
+    //! Number of internal faces
+    /*!
+      The Opm helper class got this information, and it will be useful for
+      error checking in the Divergence function.
+    */
+    int num_int_faces();
 
-	//! Destructor
-	~DeviceHelperOps() { };
+private:
+    bool initialized_;
 
+    CudaMatrix grad_;
+    CudaMatrix div_;
+    CudaMatrix fulldiv_;
+    int num_int_faces_;
 
-	//! Extract for each face the difference of its adjacent cells' values (second - first)
-	/*! 
-	  Matrix size: rows = number of internal faces, cols = number of cells.
-	*/
-	const CudaMatrix& grad();
-	//! Extract for each cell the sum of its adjacent interior faces' (signed) values.
-	/*! 
-	  Matrix size: rows = number of cells, cols = number of internal faces.
-	*/
-	const CudaMatrix& div();
-	//! Extract for each cell the sum of all its adjacent faces' (signed) values.
-	/*!
-	  Matrix size: rows = number of cells, cols = number of faces.
-	*/
-	const CudaMatrix& fulldiv();
+    const UnstructuredGrid& grid_;
 
-	//! Number of internal faces
-	/*!
-	  The Opm helper class got this information, and it will be useful for
-	  error checking in the Divergence function.
-	*/
-	int num_int_faces();
+    void initGrad_();
+    void initDiv_();
+    void initFulldiv_();
 
-    private:
-	bool initialized_;
+    typedef Eigen::SparseMatrix<double> M;
 
-	CudaMatrix grad_;
-	CudaMatrix div_;
-	CudaMatrix fulldiv_;
-	int num_int_faces_;
+    /// A list of internal faces.
+    typedef Eigen::Array<int, Eigen::Dynamic, 1> IFaces;
+    IFaces host_internal_faces_;
 
-	const UnstructuredGrid& grid_;
+    /// Extract for each internal face the difference of its adjacent cells' values (first - second).
+    M host_ngrad_;
+    /// Extract for each face the difference of its adjacent cells' values (second - first).
+    M host_grad_;
+    /// Extract for each face the average of its adjacent cells' values.
+    M host_caver_;
+    /// Extract for each cell the sum of its adjacent interior faces' (signed) values.
+    M host_div_;
+    /// Extract for each face the difference of its adjacent cells' values (first - second).
+    /// For boundary faces, one of the entries per row (corresponding to the outside) is zero.
+    M host_fullngrad_;
+    /// Extract for each cell the sum of all its adjacent faces' (signed) values.
+    M host_fulldiv_;
 
-	void initGrad_();
-	void initDiv_();
-	void initFulldiv_();
-
-
-
-	typedef Eigen::SparseMatrix<double> M;
-
-	/// A list of internal faces.
-	typedef Eigen::Array<int, Eigen::Dynamic, 1> IFaces;
-	IFaces host_internal_faces_;
-	
-	/// Extract for each internal face the difference of its adjacent cells' values (first - second).
-	M host_ngrad_;
-	/// Extract for each face the difference of its adjacent cells' values (second - first).
-	M host_grad_;
-	/// Extract for each face the average of its adjacent cells' values.
-	M host_caver_;
-	/// Extract for each cell the sum of its adjacent interior faces' (signed) values.
-	M host_div_;
-	/// Extract for each face the difference of its adjacent cells' values (first - second).
-	/// For boundary faces, one of the entries per row (corresponding to the outside) is zero.
-	M host_fullngrad_;
-	/// Extract for each cell the sum of all its adjacent faces' (signed) values.
-	M host_fulldiv_;
-
-	void initHost_();
-    };
-
-
+    void initHost_();
+};
 } // namespace equelleCUDA
 
 

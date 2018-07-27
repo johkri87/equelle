@@ -9,7 +9,6 @@
 
 namespace equelleCUDA
 {
-
     //! Sequence of Scalar
     typedef std::vector<Scalar> SeqOfScalar;
     
