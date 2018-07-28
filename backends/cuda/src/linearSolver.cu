@@ -171,7 +171,7 @@ CollOfScalar LinearSolver::solve(const CudaMatrix& A_cpy,
         cusp::krylov::cg(cusp_A, cusp_x, cusp_b, monitor);
     }
     else if ( solver_ == GMRes && precond_ == NONE ) {
-        int restart = 10;
+        constexpr int restart = 10;
         cusp::krylov::gmres(cusp_A, cusp_x, cusp_b, restart, monitor);
     }
     else {

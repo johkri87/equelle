@@ -230,13 +230,11 @@ CollOfScalar EquelleRuntimeCUDA::newtonSolve(const ResidualFunctor& rescomp,
  
     // Define the primary variable
     CollOfScalar u = CollOfScalar(u_initialguess, true);
- 
+    CollOfScalar residual = rescomp(u);
+
     if (verbose_ > 2) {
         output("Initial u", u);
         output("    newtonSolve: norm (initial u)", twoNorm(u)); 
-    }
-    CollOfScalar residual = rescomp(u);   
-    if (verbose_ > 2) {
         output("Initial residual", residual);
         output("    newtonSolve: norm (initial residual)", twoNorm(residual));
     }
@@ -254,7 +252,6 @@ CollOfScalar EquelleRuntimeCUDA::newtonSolve(const ResidualFunctor& rescomp,
 
     // Execute newton loop until residual is small or we have used too many iterations.
     while ( (twoNorm(residual) > abs_res_tol_) && (iter < max_iter_) ) {
-    
         if ( solver_.getSolver() == CPU ) {
             du = serialSolveForUpdate(residual);
         }
@@ -269,26 +266,23 @@ CollOfScalar EquelleRuntimeCUDA::newtonSolve(const ResidualFunctor& rescomp,
         // matrix as its derivative.
         u = u - du;
 
-        // Recompute residual.
-        residual = rescomp(u);
+        // Recompute residual and increment.
+        residual = rescomp(u);        
+        ++iter;
 
+
+        // Debugging output
         if (verbose_ > 2) {
-            // Debugging output not specified in Equelle.
             output("u", u);
             output("    newtonSolve: norm(u)", twoNorm(u));
             output("residual", residual);
             output("    newtonSolve: norm(residual)", twoNorm(residual));
         }
-
-        ++iter;
-
-        // Debugging output not specified in Equelle.
         if (verbose_ > 1) {
             std::cout << "    newtonSolve: iter = " << iter << " (max = " << max_iter_
                       << "), norm(residual) = " << twoNorm(residual)
                       << " (tol = " << abs_res_tol_ << ")" << std::endl;
         }
-
     }
 
     if (verbose_ > 0) {
