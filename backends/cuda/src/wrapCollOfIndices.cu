@@ -58,7 +58,8 @@ void wrapCollOfIndices::containsSubset(const thrust::device_vector<int>& superse
 }
 
 
-CollOfBool wrapCollOfIndices::isEmpty(const thrust::device_vector<int>& indices) {
+CollOfBool wrapCollOfIndices::isEmpty(const thrust::device_vector<int>& indices)
+{
     thrust::device_vector<int> temp(indices.begin(), indices.end());
     thrust::for_each(temp.begin(), temp.end(), functorIsEmpty());
     return CollOfBool(temp.begin(), temp.end());

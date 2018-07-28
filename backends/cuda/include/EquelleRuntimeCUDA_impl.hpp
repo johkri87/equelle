@@ -233,7 +233,7 @@ CollOfScalar EquelleRuntimeCUDA::newtonSolve(const ResidualFunctor& rescomp,
  
     if (verbose_ > 2) {
         output("Initial u", u);
-        output("    newtonSolve: norm (initial u)", twoNorm(u));
+        output("    newtonSolve: norm (initial u)", twoNorm(u)); 
     }
     CollOfScalar residual = rescomp(u);   
     if (verbose_ > 2) {

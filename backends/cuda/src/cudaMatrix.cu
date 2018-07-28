@@ -331,7 +331,8 @@ CudaMatrix::CudaMatrix(CudaMatrix&& mat)
 
 
 // Copy assignment operator:
-CudaMatrix& CudaMatrix::operator= (const CudaMatrix& other) {
+CudaMatrix& CudaMatrix::operator= (const CudaMatrix& other)
+{
 
     // Protect against self assignment
     if ( this != &other ) {
@@ -419,7 +420,8 @@ CudaMatrix& CudaMatrix::operator= (const CudaMatrix& other) {
 }
 
 // Move assignment operator:
-CudaMatrix& CudaMatrix::operator= (CudaMatrix&& other) {
+CudaMatrix& CudaMatrix::operator= (CudaMatrix&& other)
+{
     //std::cout << "In CudaMatrix move assignment operator." << std::endl;
     swap(other);
     return *this;
@@ -441,7 +443,8 @@ void CudaMatrix::swap(CudaMatrix& other) noexcept
 
 
 // Destructor
-CudaMatrix::~CudaMatrix() {
+CudaMatrix::~CudaMatrix()
+{
     // Free pointers if not zero.
     if ( csrVal_ != 0 ) {
         cudaStatus_ = cudaFree(csrVal_);
@@ -463,36 +466,52 @@ CudaMatrix::~CudaMatrix() {
 }
 
 
-int CudaMatrix::nnz() const {
+int CudaMatrix::nnz() const
+{
     return nnz_;
 }
-int CudaMatrix::rows() const {
+
+int CudaMatrix::rows() const
+{
     return rows_;
 }
+
 int CudaMatrix::cols() const {
     return cols_;
 }
 
-bool CudaMatrix::isEmpty() const {
+bool CudaMatrix::isEmpty() const
+{
     return (csrVal_ == NULL);
 }
 
-const double* CudaMatrix::csrVal() const {
+const double* CudaMatrix::csrVal() const
+{
     return csrVal_;
 }
-const int* CudaMatrix::csrRowPtr() const {
+
+const int* CudaMatrix::csrRowPtr() const
+{
     return csrRowPtr_;
 }
-const int* CudaMatrix::csrColInd() const {
+
+const int* CudaMatrix::csrColInd() const
+{
     return csrColInd_;
 }
-double* CudaMatrix::csrVal() {
+
+double* CudaMatrix::csrVal()
+{
     return csrVal_;
 }
-int* CudaMatrix::csrRowPtr() {
+
+int* CudaMatrix::csrRowPtr()
+{
     return csrRowPtr_;
 }
-int* CudaMatrix::csrColInd() {
+
+int* CudaMatrix::csrColInd()
+{
     return csrColInd_;
 }
 
@@ -502,7 +521,7 @@ std::string CudaMatrix::csrToString()
 {
     hostMat hmat = this->toHost();
     std::string output;
-    for (auto i = 0; i < rows_+1; i++){
+    for (auto i = 0; i < rows_+1; i++) {
         if( hmat.rowPtr[i] != 0 ) {
             std::cout << i << ": " << std::to_string(hmat.rowPtr[i]) + "\n";
         }
@@ -545,7 +564,8 @@ hostMat CudaMatrix::toHost() const
 
 
 // TRANSPOSE
-CudaMatrix CudaMatrix::transpose() const {
+CudaMatrix CudaMatrix::transpose() const
+{
     CudaMatrix out = *this;
     out.operation_ = CUSPARSE_OPERATION_TRANSPOSE;
     return out;
@@ -553,7 +573,8 @@ CudaMatrix CudaMatrix::transpose() const {
 
 
 // Error checking:
-void CudaMatrix::checkError_(const std::string& msg) const {
+void CudaMatrix::checkError_(const std::string& msg) const
+{
     if ( cudaStatus_ != cudaSuccess) {
         OPM_THROW(std::runtime_error, "\nCuda error\n\t" << msg << " - Error code: "<< cudaGetErrorString(cudaStatus_) );
     }
@@ -562,11 +583,13 @@ void CudaMatrix::checkError_(const std::string& msg) const {
     }
 }
 
-void CudaMatrix::checkError_(const std::string& msg, const std::string& caller) const {
+void CudaMatrix::checkError_(const std::string& msg, const std::string& caller) const
+{
     checkError_(msg + caller);
 }
 
-void CudaMatrix::createGeneralDescription_(const std::string& msg) {
+void CudaMatrix::createGeneralDescription_(const std::string& msg)
+{
     sparseStatus_ = cusparseCreateMatDescr( &description_ );
     checkError_("cusparseCreateMatDescr() in " + msg);
     
@@ -578,10 +601,12 @@ void CudaMatrix::createGeneralDescription_(const std::string& msg) {
 
 
 // MEMORY ALLOCATIONS
-void CudaMatrix::allocateMemory(const std::string& caller) {
+void CudaMatrix::allocateMemory(const std::string& caller)
+{
     // Error checking:
-    if ( csrVal_ != 0 ) 
+    if ( csrVal_ != 0 ) {
         OPM_THROW(std::runtime_error, "Error in CudaMatrix::allocateMemory\n" << "\tcsrVal_ already allocated.\n\tCalled from " << caller);
+    }
     if ( csrRowPtr_ != 0 ) {
         OPM_THROW(std::runtime_error, "Error in CudaMatrix::allocateMemory\n" << "\tcsrRowPtr_ already allocated.\n\tCalled from " << caller);
     }
@@ -600,8 +625,8 @@ void CudaMatrix::allocateMemory(const std::string& caller) {
 
 
 // ERROR CHECKING FOR "CudaMatrix * CudaMatrix"
-int CudaMatrix::confirmMultSize(const CudaMatrix& lhs, const CudaMatrix& rhs) {
-    
+int CudaMatrix::confirmMultSize(const CudaMatrix& lhs, const CudaMatrix& rhs)
+{
     // We need to identify what are the true lhs sizes and rhs sizes wrt "transposity"
     int leftCols = lhs.cols_;
     int leftRows = lhs.rows_;
@@ -631,17 +656,19 @@ int CudaMatrix::confirmMultSize(const CudaMatrix& lhs, const CudaMatrix& rhs) {
 }
 
 
-bool CudaMatrix::isTranspose() const {
+bool CudaMatrix::isTranspose() const
+{
     return ( operation_ == CUSPARSE_OPERATION_TRANSPOSE );
 }
 
 
-int countActualNonZeros(CudaMatrix mat) {
+int countActualNonZeros(CudaMatrix mat)
+{
     hostMat hmat = mat.toHost();
     int count = hmat.nnz;
     assert(hmat.vals.size() == hmat.nnz);
     for( int i = 0; i < hmat.nnz; i++ ) {
-        if(fabs(hmat.vals[i]) == 0.0){
+        if(fabs(hmat.vals[i]) == 0.0) {
             --count;
         }
     }
@@ -700,7 +727,7 @@ std::ostream& equelleCUDA::operator<<(std::ostream& output, const CudaMatrix& ma
            << "\nCsrColInd: " << mat.csrColInd()
            << "\nCsrVal: " << mat.csrVal();
           //<< "\nFirst CsrVal: " << hmat.vals[0];
-    
+
     if(mat.isEmpty()){
         return output;
     }
@@ -716,7 +743,8 @@ std::ostream& equelleCUDA::operator<<(std::ostream& output, const CudaMatrix& ma
 }
 
 // Operator +
-CudaMatrix equelleCUDA::operator+(const CudaMatrix& lhs, const CudaMatrix& rhs) {
+CudaMatrix equelleCUDA::operator+(const CudaMatrix& lhs, const CudaMatrix& rhs)
+{
     // If one of the matrices is emtpy, we interpret it as a matrix filled with
     // zeros, and therefore just return the other matrix.
     // This is convenient when we implement autodiff by using CudaMatrix.
@@ -731,7 +759,8 @@ CudaMatrix equelleCUDA::operator+(const CudaMatrix& lhs, const CudaMatrix& rhs) 
     }
 }
 
-CudaMatrix equelleCUDA::operator-(const CudaMatrix& lhs, const CudaMatrix& rhs) {
+CudaMatrix equelleCUDA::operator-(const CudaMatrix& lhs, const CudaMatrix& rhs)
+{
     // If one of the matrices is emtpy, we interpret it as a matrix filled with
     // zeros, and therefore just return the other matrix.
     // This is convenient when we implement autodiff by using CudaMatrix.
@@ -749,8 +778,8 @@ CudaMatrix equelleCUDA::operator-(const CudaMatrix& lhs, const CudaMatrix& rhs) 
 
 CudaMatrix equelleCUDA::cudaMatrixSum(const CudaMatrix& lhs, 
                       const CudaMatrix& rhs,
-                      const double beta) {
-  
+                      const double beta)
+{  
     // We do not allow using transposed matrices in sums.
     if (  lhs.isTranspose() || rhs.isTranspose()) {
         OPM_THROW(std::runtime_error, "Error in CudaMatrix + CudaMatrix\n" << "\tOne of the matrices seems to be a transposed matrix. We do not allow this, as transposed matrices have limited use in this Equelle Back-End.");
@@ -768,7 +797,6 @@ CudaMatrix equelleCUDA::cudaMatrixSum(const CudaMatrix& lhs,
     if ( (lhs.rows_ != rhs.rows_) || (lhs.cols_ != rhs.cols_) ) {
         OPM_THROW(std::runtime_error, "Error in CudaMatrix + CudaMatrix\n" << "\tMatrices of different size.\n" << "\tlhs: " << lhs.rows_ << " x " << lhs.cols_ << "\n" << "\trhs: " << rhs.rows_ << " x " << rhs.cols_ << ".");
     }
-
 
     // Create an empty matrix. Need to set rows, cols, nnz, and allocate arrays!
     CudaMatrix out;
@@ -821,7 +849,6 @@ CudaMatrix equelleCUDA::cudaMatrixSum(const CudaMatrix& lhs,
     // 2) Add matrices
     // Need to create alpha and beta:
     const double alpha = 1.0;
-
     out.sparseStatus_ = cusparseDcsrgeam(CUSPARSE, out.rows_, out.cols_,
                      &alpha,
                      lhs.description_, lhs.nnz_,
@@ -838,8 +865,8 @@ CudaMatrix equelleCUDA::cudaMatrixSum(const CudaMatrix& lhs,
 } // cudaMatrixSum
 
 
-CudaMatrix equelleCUDA::multiplyAdd(const CudaMatrix& a, const CudaMatrix& b, const CudaMatrix& c) {
-
+CudaMatrix equelleCUDA::multiplyAdd(const CudaMatrix& a, const CudaMatrix& b, const CudaMatrix& c)
+{
     if ( a.isEmpty() || b.isEmpty() ) {
         return c;
     }
@@ -855,7 +882,6 @@ CudaMatrix equelleCUDA::multiplyAdd(const CudaMatrix& a, const CudaMatrix& b, co
 // gemm2 performs the operation D = alpha ∗ A ∗ B + beta ∗ C
 CudaMatrix equelleCUDA::gemm2(const CudaMatrix& A, const CudaMatrix& B, const CudaMatrix& C, double alpha, double beta)
 {
-
     // Create an empty matrix. Need to set rows, cols, nnz, and allocate arrays!
     CudaMatrix out;
     // Legal matrix sizes depend on whether the matrices are transposed or not!
@@ -886,9 +912,10 @@ CudaMatrix equelleCUDA::gemm2(const CudaMatrix& A, const CudaMatrix& B, const Cu
                          C.description_, C.nnz_, C.csrRowPtr_, C.csrColInd_,
                          out.description_, out.csrRowPtr_,
                          nnzTotalDevHostPtr, info, buffer );
-    if (NULL != nnzTotalDevHostPtr){
+    if (NULL != nnzTotalDevHostPtr) {
         out.nnz_ = *nnzTotalDevHostPtr;
-    }else{
+    }else
+    {
         int baseC;
         cudaMemcpy(&out.nnz_, out.csrRowPtr_+out.rows_, sizeof(int), cudaMemcpyDeviceToHost);
         cudaMemcpy(&baseC, out.csrRowPtr_, sizeof(int), cudaMemcpyDeviceToHost);
@@ -916,26 +943,27 @@ CudaMatrix equelleCUDA::gemm2(const CudaMatrix& A, const CudaMatrix& B, const Cu
 }
 
 
-CudaMatrix equelleCUDA::multiplyAdd(const CudaMatrix& a, const Scalar b, const CudaMatrix& c) {
+CudaMatrix equelleCUDA::multiplyAdd(const CudaMatrix& a, const Scalar b, const CudaMatrix& c)
+{
     return cudaMatrixSum(a,c,b);
 }
 
 
-CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs) {
-
+CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs)
+{
     //std::cout << "-------MATRIX * MATRIX " << lhs.isTranspose() << " " << rhs.isTranspose() << "---------\n";
     // If any of them are empty, we return an empty matrix.
     // An empty matrix is interpreted as a correctly sized matrix of zeros.
     // This lets us not worry about empty derivatives for autodiff.
     if ( lhs.isEmpty() || rhs.isEmpty() ) {
-    return CudaMatrix();
+        return CudaMatrix();
     }
 
     // Some functionality is implemented by multiplying with a diagonal matrix
     // from the left. Since csrGemm is a hotspot, we handle these cases more efficient
     // by this function:
     if ( lhs.diagonal_ ) {
-    return lhs.diagonalMultiply(rhs);
+        return lhs.diagonalMultiply(rhs);
     }
     
     // Create an empty matrix. Need to set rows, cols, nnz, and allocate arrays!
@@ -950,7 +978,7 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs) 
     // 1) Find nonzero pattern of output
     // Allocate rowPtr:
     out.cudaStatus_ = cudaMalloc( (void**)&out.csrRowPtr_, (out.rows_+1)*sizeof(int));
-    out.checkError_("cudaMalloc(out.csrRowPtr_) in CudaMatrix operator +");
+    out.checkError_("cudaMalloc(out.csrRowPtr_) in CudaMatrix operator *");
 
     // The following code for finding number of non-zeros is
     // taken from the Nvidia cusparse documentation, section 9.2
@@ -969,16 +997,16 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs) 
                          out.csrRowPtr_, nnzTotalDevHostPtr);
     out.checkError_("cusparseXcsrgemmNnz() in CudaMatrix operator *");
     if ( nnzTotalDevHostPtr != NULL ) {
-    out.nnz_ = *nnzTotalDevHostPtr;
+        out.nnz_ = *nnzTotalDevHostPtr;
     } else {
-    int baseC;
-    out.cudaStatus_ = cudaMemcpy(&out.nnz_, out.csrRowPtr_ + out.rows_,
-                     sizeof(int), cudaMemcpyDeviceToHost);
-    out.checkError_("cudaMemcpy(out.csrRowPtr_ + out.rows_) in CudaMatrix operator *");
-    out.cudaStatus_ = cudaMemcpy(&baseC, out.csrRowPtr_, sizeof(int),
-                     cudaMemcpyDeviceToHost);
-    out.checkError_("cudaMemcpy(baseC) in CudaMatrix operator *");
-    out.nnz_ -= baseC;
+        int baseC;
+        out.cudaStatus_ = cudaMemcpy(&out.nnz_, out.csrRowPtr_ + out.rows_,
+                         sizeof(int), cudaMemcpyDeviceToHost);
+        out.checkError_("cudaMemcpy(out.csrRowPtr_ + out.rows_) in CudaMatrix operator *");
+        out.cudaStatus_ = cudaMemcpy(&baseC, out.csrRowPtr_, sizeof(int),
+                         cudaMemcpyDeviceToHost);
+        out.checkError_("cudaMemcpy(baseC) in CudaMatrix operator *");
+        out.nnz_ -= baseC;
     }
 
      // Allocate the other two arrays:
@@ -1004,9 +1032,8 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs) 
 
 
 // Matrix * vector
-CudaArray equelleCUDA::operator*(const CudaMatrix& mat, const CudaArray& vec) {
-    //std::cout << "-------MATRIX * VECTOR ---------\n";
-
+CudaArray equelleCUDA::operator*(const CudaMatrix& mat, const CudaArray& vec)
+{
      // Check that sizes match - Depend on transpose matrix or not.
     int resultingVectorSize;
     if ( !mat.isTranspose() ) { // NOT transposed
@@ -1022,7 +1049,6 @@ CudaArray equelleCUDA::operator*(const CudaMatrix& mat, const CudaArray& vec) {
         }
         resultingVectorSize = mat.cols_;
     }
-
     
     // Call cusparse matrix-vector operation:
     // y = alpha*op(A)*x + beta*y
@@ -1043,11 +1069,13 @@ CudaArray equelleCUDA::operator*(const CudaMatrix& mat, const CudaArray& vec) {
 
 
 // Scalar multiplications with matrix:
-CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const Scalar rhs) {
+CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const Scalar rhs)
+{
     return (rhs * lhs);
 }
 
-CudaMatrix equelleCUDA::operator*(const Scalar lhs, const CudaMatrix& rhs) {
+CudaMatrix equelleCUDA::operator*(const Scalar lhs, const CudaMatrix& rhs)
+{
     // rhs should not be empty
     if ( rhs.isEmpty() ) {
         OPM_THROW(std::runtime_error, "Calling CudaMatrix * Scalar with empty matrix...");
@@ -1061,13 +1089,15 @@ CudaMatrix equelleCUDA::operator*(const Scalar lhs, const CudaMatrix& rhs) {
     return out;
 }
 
-CudaMatrix equelleCUDA::operator-(const CudaMatrix& arg) {
+CudaMatrix equelleCUDA::operator-(const CudaMatrix& arg)
+{
     return -1.0*arg;
 }
 
 
 // Diagonal multiplyer:
-CudaMatrix CudaMatrix::diagonalMultiply(const CudaMatrix& rhs) const {
+CudaMatrix CudaMatrix::diagonalMultiply(const CudaMatrix& rhs) const
+{
     // Make sure we do not call this function if this is not diagonal
     if ( !this->diagonal_ ) {
         OPM_THROW(std::runtime_error, "Error in CudaMatrix::diagonalMultiply\n\tCaller matrix is not diagonal!");
@@ -1110,7 +1140,7 @@ __global__ void wrapCudaMatrix::initDiagonalMatrix( double* csrVal,
 {
     const int i = myID();
     if ( i < nnz + 1) {
-    csrRowPtr[i] = i;
+        csrRowPtr[i] = i;
         if ( i < nnz) {
             csrVal[i] = scalars[i];
             csrColInd[i] = i;

@@ -48,7 +48,7 @@ CudaArray::CudaArray(const int size)
     setUniformDouble<<<setup_.grid, setup_.block>>>( dev_values_, 0.0, size_);
 }
 
-CudaArray::CudaArray(const int size, const double value) 
+CudaArray::CudaArray(const int size, const double value)
     : size_(size),
       dev_values_(0),
       setup_(size_)
@@ -93,12 +93,12 @@ CudaArray::CudaArray(const CudaArray& coll)
     //std::cout << __PRETTY_FUNCTION__ << std::endl;
 
     if (coll.dev_values_ != 0) {
-    cudaStatus_ = cudaMalloc( (void**)&dev_values_, size_*sizeof(double));
-    checkError_("cudaMalloc in CudaArray::CudaArray(const CudaArray&)"); 
+        cudaStatus_ = cudaMalloc( (void**)&dev_values_, size_*sizeof(double));
+        checkError_("cudaMalloc in CudaArray::CudaArray(const CudaArray&)"); 
 
-    cudaStatus_ = cudaMemcpy(dev_values_, coll.dev_values_, size_*sizeof(double),
-                 cudaMemcpyDeviceToDevice);
-    checkError_("cudaMemcpy in CudaArray::CudaArray(const CudaArray&)");
+        cudaStatus_ = cudaMemcpy(dev_values_, coll.dev_values_, size_*sizeof(double),
+                     cudaMemcpyDeviceToDevice);
+        checkError_("cudaMemcpy in CudaArray::CudaArray(const CudaArray&)");
     }    
 }
 
@@ -113,7 +113,8 @@ CudaArray::CudaArray(CudaArray&& coll)
 }
 
 // Copy assignment operator
-CudaArray& CudaArray::operator= (const CudaArray& other) {
+CudaArray& CudaArray::operator= (const CudaArray& other)
+{
     //std::cout << __PRETTY_FUNCTION__ << std::endl;
 
     // Protect agains " var = var " , self assignment
@@ -158,7 +159,8 @@ CudaArray& CudaArray::operator= (const CudaArray& other) {
 
 
 // Move assignment operator
-CudaArray& CudaArray::operator= (CudaArray&& other) {
+CudaArray& CudaArray::operator= (CudaArray&& other)
+{
     //std::cout << "In CudaArray move assignment operator." << std::endl;
     size_ = other.size_;
     std::swap(dev_values_, other.dev_values_);
@@ -167,7 +169,8 @@ CudaArray& CudaArray::operator= (CudaArray&& other) {
 
 
 // Destructor:
-CudaArray::~CudaArray() {
+CudaArray::~CudaArray()
+{
     if (dev_values_ != 0) {
         cudaStatus_ = cudaFree(dev_values_);
         checkError_("cudaFree in CudaArray::~CudaArray");
@@ -177,18 +180,21 @@ CudaArray::~CudaArray() {
 
 
 
-const double* CudaArray::data() const {
+const double* CudaArray::data() const
+{
     return dev_values_;
 }
 
-double* CudaArray::data() {
+double* CudaArray::data()
+{
     return dev_values_;
 }
 
 
 
 
-kernelSetup CudaArray::setup() const {
+kernelSetup CudaArray::setup() const
+{
     return setup_;
 }
 
@@ -212,7 +218,8 @@ int CudaArray::size() const
 }
 
 
-void CudaArray::checkError_(const std::string& msg) const {
+void CudaArray::checkError_(const std::string& msg) const
+{
     if ( cudaStatus_ != cudaSuccess ) {
         OPM_THROW(std::runtime_error, "\nCuda error\n\t" << msg << " - Error code: " << cudaGetErrorString(cudaStatus_));
     }
@@ -247,67 +254,73 @@ std::ostream& equelleCUDA::operator<<(std::ostream& output, const CudaArray& arr
 
 
 
-CudaArray equelleCUDA::operator-(const CudaArray& lhs, const CudaArray& rhs) {
-
+CudaArray equelleCUDA::operator-(const CudaArray& lhs, const CudaArray& rhs)
+{
     CudaArray out = lhs;
     kernelSetup s = out.setup();
     minus_kernel <<<s.grid, s.block>>>(out.data(), rhs.data(), out.size());
     return out;
 }
 
-CudaArray equelleCUDA::operator+(const CudaArray& lhs, const CudaArray& rhs) {
-
+CudaArray equelleCUDA::operator+(const CudaArray& lhs, const CudaArray& rhs)
+{
     CudaArray out = lhs;
     kernelSetup s = out.setup();
     plus_kernel <<<s.grid, s.block>>>(out.data(), rhs.data(), out.size());
     return out;
 }
 
-CudaArray equelleCUDA::operator*(const CudaArray& lhs, const CudaArray& rhs) {
-
+CudaArray equelleCUDA::operator*(const CudaArray& lhs, const CudaArray& rhs)
+{
     CudaArray out = lhs;
     kernelSetup s = out.setup();
     multiplication_kernel <<<s.grid, s.block>>>(out.data(), rhs.data(), out.size());
     return out;
 }
 
-CudaArray equelleCUDA::operator/(const CudaArray& lhs, const CudaArray& rhs) {
-
+CudaArray equelleCUDA::operator/(const CudaArray& lhs, const CudaArray& rhs)
+{
     CudaArray out = lhs;
     kernelSetup s = out.setup();
     division_kernel <<<s.grid, s.block>>>(out.data(), rhs.data(), out.size());
     return out;
 }
 
-CudaArray equelleCUDA::operator*(const Scalar lhs, const CudaArray& rhs) {
+CudaArray equelleCUDA::operator*(const Scalar lhs, const CudaArray& rhs)
+{
     CudaArray out = rhs;
     kernelSetup s = out.setup();
     scalMultColl_kernel<<<s.grid,s.block>>>(out.data(), lhs, out.size());
     return out;
 }
 
-CudaArray equelleCUDA::operator*(const CudaArray& lhs, const Scalar rhs) {
+CudaArray equelleCUDA::operator*(const CudaArray& lhs, const Scalar rhs)
+{
     return (rhs * lhs);
 }
 
-CudaArray equelleCUDA::operator/(const CudaArray& lhs, const Scalar rhs) {
+CudaArray equelleCUDA::operator/(const CudaArray& lhs, const Scalar rhs)
+{
     return ( (1/rhs) * lhs);
 }
 
-CudaArray equelleCUDA::operator/(const Scalar lhs, const CudaArray& rhs) {
+CudaArray equelleCUDA::operator/(const Scalar lhs, const CudaArray& rhs)
+{
     CudaArray out = rhs;
     kernelSetup s = out.setup();
     scalDivColl_kernel<<<s.grid,s.block>>>(out.data(), lhs, out.size());
     return out;
 }
 
-CudaArray equelleCUDA::operator-(const CudaArray& arg) {
+CudaArray equelleCUDA::operator-(const CudaArray& arg)
+{
     return -1.0*arg;
 }
 
 
 //  >
-CollOfBool equelleCUDA::operator>(const CudaArray& lhs, const CudaArray& rhs) {
+CollOfBool equelleCUDA::operator>(const CudaArray& lhs, const CudaArray& rhs)
+{
     CollOfBool out(lhs.size());
     bool* out_ptr = thrust::raw_pointer_cast( &out[0] );
     kernelSetup s = lhs.setup();
@@ -315,7 +328,8 @@ CollOfBool equelleCUDA::operator>(const CudaArray& lhs, const CudaArray& rhs) {
     return out;
 }
 
-CollOfBool equelleCUDA::operator>(const CudaArray& lhs, const Scalar rhs) {
+CollOfBool equelleCUDA::operator>(const CudaArray& lhs, const Scalar rhs)
+{
     CollOfBool out(lhs.size());
     bool* out_ptr = thrust::raw_pointer_cast( &out[0] );
     kernelSetup s = lhs.setup();
@@ -323,7 +337,8 @@ CollOfBool equelleCUDA::operator>(const CudaArray& lhs, const Scalar rhs) {
     return out;
 }
 
-CollOfBool equelleCUDA::operator>(const Scalar lhs, const CudaArray& rhs) {
+CollOfBool equelleCUDA::operator>(const Scalar lhs, const CudaArray& rhs)
+{
     CollOfBool out(rhs.size());
     bool* out_ptr = thrust::raw_pointer_cast( &out[0] );
     kernelSetup s = rhs.setup();
@@ -333,24 +348,28 @@ CollOfBool equelleCUDA::operator>(const Scalar lhs, const CudaArray& rhs) {
 
 
 // <
-CollOfBool equelleCUDA::operator<(const CudaArray& lhs, const CudaArray& rhs) {
+CollOfBool equelleCUDA::operator<(const CudaArray& lhs, const CudaArray& rhs)
+{
     // if   a < b   then b > a
     return rhs > lhs;
 }
 
-CollOfBool equelleCUDA::operator<(const CudaArray& lhs, const Scalar rhs) {
+CollOfBool equelleCUDA::operator<(const CudaArray& lhs, const Scalar rhs)
+{
     // if  a < b  then   b > a
     return rhs > lhs;
 }
 
-CollOfBool equelleCUDA::operator<(const Scalar lhs, const CudaArray& rhs) {
+CollOfBool equelleCUDA::operator<(const Scalar lhs, const CudaArray& rhs)
+{
     // if   a < b   then b > a
     return rhs > lhs;
 }
 
 
 // >=
-CollOfBool equelleCUDA::operator>=(const CudaArray& lhs, const CudaArray& rhs) {
+CollOfBool equelleCUDA::operator>=(const CudaArray& lhs, const CudaArray& rhs)
+{
     CollOfBool out(lhs.size());
     bool* out_ptr = thrust::raw_pointer_cast( &out[0] );
     kernelSetup s = lhs.setup();
@@ -358,7 +377,8 @@ CollOfBool equelleCUDA::operator>=(const CudaArray& lhs, const CudaArray& rhs) {
     return out;
 }
 
-CollOfBool equelleCUDA::operator>=(const CudaArray& lhs, const Scalar rhs) {
+CollOfBool equelleCUDA::operator>=(const CudaArray& lhs, const Scalar rhs)
+{
     CollOfBool out(lhs.size());
     bool* out_ptr = thrust::raw_pointer_cast( &out[0] );
     kernelSetup s = lhs.setup();
@@ -366,7 +386,8 @@ CollOfBool equelleCUDA::operator>=(const CudaArray& lhs, const Scalar rhs) {
     return out;
 }
 
-CollOfBool equelleCUDA::operator>=(const Scalar lhs, const CudaArray& rhs) {
+CollOfBool equelleCUDA::operator>=(const Scalar lhs, const CudaArray& rhs)
+{
     CollOfBool out(rhs.size());
     bool* out_ptr = thrust::raw_pointer_cast( &out[0] );
     kernelSetup s = rhs.setup();
@@ -376,24 +397,28 @@ CollOfBool equelleCUDA::operator>=(const Scalar lhs, const CudaArray& rhs) {
 
 
 // <= 
-CollOfBool equelleCUDA::operator<=(const CudaArray& lhs, const CudaArray& rhs) {
+CollOfBool equelleCUDA::operator<=(const CudaArray& lhs, const CudaArray& rhs)
+{
     // if   a <= b   then b >= a
     return rhs >= lhs;
 }
 
-CollOfBool equelleCUDA::operator<=(const CudaArray& lhs, const Scalar rhs) {
+CollOfBool equelleCUDA::operator<=(const CudaArray& lhs, const Scalar rhs)
+{
     // if  a <= b  then   b >= a
     return rhs >= lhs;
 }
 
-CollOfBool equelleCUDA::operator<=(const Scalar lhs, const CudaArray& rhs) {
+CollOfBool equelleCUDA::operator<=(const Scalar lhs, const CudaArray& rhs)
+{
     // if   a <= b   then b >= a
     return rhs >= lhs;
 }
 
 
 // ==
-CollOfBool equelleCUDA::operator==(const CudaArray& lhs, const CudaArray& rhs) {
+CollOfBool equelleCUDA::operator==(const CudaArray& lhs, const CudaArray& rhs)
+{
     CollOfBool out(lhs.size());
     bool *out_ptr = thrust::raw_pointer_cast( &out[0] );
     kernelSetup s = lhs.setup();
@@ -401,7 +426,8 @@ CollOfBool equelleCUDA::operator==(const CudaArray& lhs, const CudaArray& rhs) {
     return out;
 }
 
-CollOfBool equelleCUDA::operator==(const CudaArray& lhs, const Scalar rhs) {
+CollOfBool equelleCUDA::operator==(const CudaArray& lhs, const Scalar rhs)
+{
     CollOfBool out(lhs.size());
     bool *out_ptr = thrust::raw_pointer_cast( &out[0] );
     kernelSetup s = lhs.setup();
@@ -409,13 +435,15 @@ CollOfBool equelleCUDA::operator==(const CudaArray& lhs, const Scalar rhs) {
     return out;
 }
 
-CollOfBool equelleCUDA::operator==(const Scalar lhs, const CudaArray& rhs) {
+CollOfBool equelleCUDA::operator==(const Scalar lhs, const CudaArray& rhs)
+{
     return (rhs == lhs);
 }
 
 
 // !=
-CollOfBool equelleCUDA::operator!=(const CudaArray& lhs, const CudaArray& rhs) {
+CollOfBool equelleCUDA::operator!=(const CudaArray& lhs, const CudaArray& rhs)
+{
     CollOfBool out(lhs.size());
     bool *out_ptr = thrust::raw_pointer_cast( &out[0] );
     kernelSetup s = lhs.setup();
@@ -423,7 +451,8 @@ CollOfBool equelleCUDA::operator!=(const CudaArray& lhs, const CudaArray& rhs) {
     return out;
 }
 
-CollOfBool equelleCUDA::operator!=(const CudaArray& lhs, const Scalar rhs) {
+CollOfBool equelleCUDA::operator!=(const CudaArray& lhs, const Scalar rhs)
+{
     CollOfBool out(lhs.size());
     bool *out_ptr = thrust::raw_pointer_cast( &out[0] );
     kernelSetup s = lhs.setup();
@@ -431,7 +460,8 @@ CollOfBool equelleCUDA::operator!=(const CudaArray& lhs, const Scalar rhs) {
     return out;
 }
 
-CollOfBool equelleCUDA::operator!=(const Scalar lhs, const CudaArray& rhs) {
+CollOfBool equelleCUDA::operator!=(const Scalar lhs, const CudaArray& rhs)
+{
     return (rhs != lhs);
 }
 
@@ -457,7 +487,8 @@ CudaArray equelleCUDA::multiplyAdd(const CudaArray& a, const Scalar b, const Cud
 /////////////////////////////////////////////////////////////////////////////////
 
 
-__global__ void wrapCudaArray::abs_kernel(double* out, const double* in, const int size) {
+__global__ void wrapCudaArray::abs_kernel(double* out, const double* in, const int size)
+{
     const int i = myID();
     if ( i < size ) {
         out[i] = fabs(in[i]);
@@ -474,7 +505,8 @@ __global__ void wrapCudaArray::setUniformDouble(double* data, const double val, 
 }
 
 
-__global__ void wrapCudaArray::minus_kernel(double* out, const double* rhs, const int size) {
+__global__ void wrapCudaArray::minus_kernel(double* out, const double* rhs, const int size)
+{
     const int index = myID();
     if ( index < size ) {
         out[index] = out[index] - rhs[index];
@@ -482,21 +514,24 @@ __global__ void wrapCudaArray::minus_kernel(double* out, const double* rhs, cons
 }
 
 
-__global__ void wrapCudaArray::plus_kernel(double* out, const double* rhs, const int size) {
+__global__ void wrapCudaArray::plus_kernel(double* out, const double* rhs, const int size)
+{
     const int index = myID();
     if( index < size ) {
         out[index] = out[index] + rhs[index];
     }
 }
 
-__global__ void wrapCudaArray::multiplication_kernel(double* out, const double* rhs, const int size) {
+__global__ void wrapCudaArray::multiplication_kernel(double* out, const double* rhs, const int size)
+{
     const int index = myID();
     if ( index < size ) {
         out[index] = out[index] * rhs[index];
     }
 }
 
-__global__ void wrapCudaArray::division_kernel(double* out, const double* rhs, const int size) {
+__global__ void wrapCudaArray::division_kernel(double* out, const double* rhs, const int size)
+{
     const int index = myID();
     if ( index < size ) {
         out[index] = out[index] / rhs[index];
@@ -504,7 +539,8 @@ __global__ void wrapCudaArray::division_kernel(double* out, const double* rhs, c
 }
 
 __global__ void wrapCudaArray::scalMultColl_kernel(double* out, const double scal,
-                               const int size) {
+                               const int size)
+{
     const int index = myID();
     if ( index < size ) {
         out[index] = out[index]*scal;
@@ -512,7 +548,8 @@ __global__ void wrapCudaArray::scalMultColl_kernel(double* out, const double sca
 }
 
 __global__ void wrapCudaArray::scalDivColl_kernel(double* out, const double scal,
-                             const int size) {
+                             const int size)
+{
     const int index = myID();
     if ( index < size ) {
         out[index] = scal/out[index];
@@ -634,7 +671,8 @@ __global__ void wrapCudaArray::comp_collNEscal_kernel( bool* out,
 __global__ void wrapCudaArray::multiplyAddKernel( double* a_out,
                                                   const double* b,
                                                   const double* c,
-                                                  const int size) {
+                                                  const int size)
+{
     const int index = myID();
     if ( index < size ) {
         a_out[index] = a_out[index] * b[index] + c[index];
@@ -644,7 +682,8 @@ __global__ void wrapCudaArray::multiplyAddKernel( double* a_out,
 __global__ void wrapCudaArray::multiplyAddKernel( double* a_out,
                                                   const double b,
                                                   const double* c,
-                                                  const int size) {
+                                                  const int size)
+{
     const int index = myID();
     if ( index < size ) {
         a_out[index] = a_out[index] * b + c[index];
@@ -653,7 +692,8 @@ __global__ void wrapCudaArray::multiplyAddKernel( double* a_out,
 
 
 // Transforming CollOfBool
-std::vector<bool> equelleCUDA::cob_to_std( const CollOfBool& cob) {
+std::vector<bool> equelleCUDA::cob_to_std( const CollOfBool& cob)
+{
     thrust::host_vector<bool> host = cob;
     return std::vector<bool>(host.begin(), host.end());
 }

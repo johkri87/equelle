@@ -23,15 +23,17 @@ DeviceHelperOps::DeviceHelperOps( const UnstructuredGrid& grid_in )
 }
 
 
-const CudaMatrix& DeviceHelperOps::grad() {
+const CudaMatrix& DeviceHelperOps::grad()
+{
     if (grad_.isEmpty()) {
-    std::cout << "Creating grad matrix\n";
+        std::cout << "Creating grad matrix\n";
         initGrad_();
     }
     return grad_;
 }
 
-const CudaMatrix& DeviceHelperOps::div() {
+const CudaMatrix& DeviceHelperOps::div()
+{
     if ( div_.isEmpty() ) {
         std::cout << "Creating div matrix\n";
         initDiv_();
@@ -39,7 +41,8 @@ const CudaMatrix& DeviceHelperOps::div() {
     return div_;
 }
 
-const CudaMatrix& DeviceHelperOps::fulldiv() {
+const CudaMatrix& DeviceHelperOps::fulldiv()
+{
     if ( fulldiv_.isEmpty() ) {
         std::cout << "Creating fulldiv matrix\n";
         initFulldiv_();
@@ -47,7 +50,8 @@ const CudaMatrix& DeviceHelperOps::fulldiv() {
     return fulldiv_;
 }
 
-int DeviceHelperOps::num_int_faces() {
+int DeviceHelperOps::num_int_faces()
+{
     if ( num_int_faces_ == -1 ) {
         OPM_THROW(std::runtime_error, "num_int_faces_ not created in DeviceHelperOps!");
     }
@@ -55,23 +59,24 @@ int DeviceHelperOps::num_int_faces() {
 }
 
 
-
-
-void DeviceHelperOps::initGrad_() {
+void DeviceHelperOps::initGrad_()
+{
     if ( initialized_ == false ) {
         initHost_();
     }
     grad_ = CudaMatrix(host_grad_);
 }
 
-void DeviceHelperOps::initDiv_() {
+void DeviceHelperOps::initDiv_()
+{
     if ( initialized_ == false ) {
         initHost_();
     }
     div_ = CudaMatrix(host_div_);
 }
 
-void DeviceHelperOps::initFulldiv_() {
+void DeviceHelperOps::initFulldiv_()
+{
     if ( initialized_ == false ) {
         initHost_();
     }
@@ -81,8 +86,8 @@ void DeviceHelperOps::initFulldiv_() {
 
 
 
-void DeviceHelperOps::initHost_() {
-    
+void DeviceHelperOps::initHost_()
+{
     std::cout << "-----------------------------------------------------\n";
     std::cout << "---------- CREATING HOST HELPER OPS -----------------\n";
     std::cout << "-----------------------------------------------------\n";
@@ -109,7 +114,6 @@ void DeviceHelperOps::initHost_() {
             ++fi;
         }
     }
-    
     // Create matrices.
     host_ngrad_.resize(num_internal, nc);
     host_caver_.resize(num_internal, nc);
@@ -142,8 +146,6 @@ void DeviceHelperOps::initHost_() {
     host_fullngrad_.setFromTriplets(fullngrad_tri.begin(), fullngrad_tri.end());
     host_fulldiv_ = host_fullngrad_.transpose();
     num_int_faces_ = host_internal_faces_.rows();
-
-
     initialized_ = true;
 }
 

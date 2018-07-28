@@ -67,7 +67,6 @@ CollOfScalar wrapEquelleRuntimeCUDA::trinaryIfWrapper( const CollOfBool& predica
         // Using matrix-multiplication for derivatives
         CudaMatrix diagBool(predicate);
         CudaMatrix der = diagBool*iftrue.derivative() + (CudaMatrix(predicate.size()) - diagBool)*iffalse.derivative();
-        
         return CollOfScalar(std::move(val), std::move(der));
     }
     else { // No AutoDiff
@@ -177,8 +176,7 @@ CollOfScalar wrapEquelleRuntimeCUDA::gradientWrapper( const CollOfScalar& cell_s
                              cell_scalarfield.data(),
                              int_faces.raw_pointer(),
                              face_cells,
-                             out.size());
-        
+                             out.size());       
         return out;
     }
 }
@@ -270,7 +268,6 @@ __global__ void wrapEquelleRuntimeCUDA::divergenceKernel( double* div,
 // --------- SQRT ----------------
 CollOfScalar wrapEquelleRuntimeCUDA::sqrtWrapper( const CollOfScalar& x)
 {
-    
     CudaArray val = x.value();
     kernelSetup s = val.setup();
     sqrtKernel<<<s.grid, s.block>>> (val.data(), val.size());
@@ -303,7 +300,6 @@ CollOfScalar wrapEquelleRuntimeCUDA::multiplyAdd(const CollOfScalar& a, const Co
         CudaMatrix diag_u(a.value());
         CudaMatrix diag_v(b.value());
         CudaMatrix der = (diag_v*a.derivative() + diag_u*b.derivative()) + c.derivative();
-
         return CollOfScalar(std::move(val), std::move(der));
     }
     return CollOfScalar(std::move(val));

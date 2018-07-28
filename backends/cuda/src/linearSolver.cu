@@ -65,7 +65,8 @@ LinearSolver::LinearSolver(std::string solver,
 }
 
 // Print legal input to screen:
-void LinearSolver::printLegalInput() const {
+void LinearSolver::printLegalInput() const
+{
     std::cout << "\n\nThe following are legal input for solver:\n";
     std::cout << "\t - CG\n";
     std::cout << "\t - BiCGStab\n";
@@ -93,11 +94,13 @@ void LinearSolver::printLegalCombos() const {
     std::cout << "\tpreconditioner=diagonal\n";
 }
 
-EquelleSolver LinearSolver::getSolver() const {
+EquelleSolver LinearSolver::getSolver() const
+{
     return solver_;
 }
 
-LinearSolver::~LinearSolver() {
+LinearSolver::~LinearSolver()
+{
     // Nothing to do here
 }
 
@@ -105,12 +108,12 @@ LinearSolver::~LinearSolver() {
 // Solver:
 CollOfScalar LinearSolver::solve(const CudaMatrix& A_cpy, 
                  const CudaArray& b_cpy,
-                 const int verbose ) const {
-    
+                 const int verbose ) const
+{
     // Check square matrix, and that A.rows() = b.size()
     // Need also to check which method and preconditioner to use.
    
-    // hack to get around const issues...
+    // Hack to get around const issues...
     CudaMatrix A = A_cpy;
     CudaArray b = b_cpy; 
 
@@ -183,6 +186,5 @@ CollOfScalar LinearSolver::solve(const CudaMatrix& A_cpy,
         std::cout << "cusp residual norm: " << monitor.residual_norm() << "\n";
         std::cout << "\n";
     }
-
     return CollOfScalar(std::move(x));
 }

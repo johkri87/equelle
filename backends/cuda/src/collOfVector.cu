@@ -45,11 +45,12 @@ CollOfVector::CollOfVector(const std::vector<double>& host, const int dim)
 
 
 // Copy assignment operator
-CollOfVector& CollOfVector::operator= (const CollOfVector& other) {
+CollOfVector& CollOfVector::operator= (const CollOfVector& other)
+{
 
     // Does not give sense to assign Vectors of different dimensions.
     if ( this->dim_ != other.dim_ ) {
-	OPM_THROW(std::runtime_error, "Trying to assign a vector with another vector of different dim. lhs.dim_ = " << this->dim_ << " and rhs.dim_ = " << other.dim_);
+    OPM_THROW(std::runtime_error, "Trying to assign a vector with another vector of different dim. lhs.dim_ = " << this->dim_ << " and rhs.dim_ = " << other.dim_);
     }
     this->elements_ = other.elements_;
     return *this;
@@ -76,7 +77,8 @@ CollOfVector::~CollOfVector()
 
 
 //  ----- NORM -----
-CollOfScalar CollOfVector::norm() const {
+CollOfScalar CollOfVector::norm() const
+{
     CollOfScalar out(numVectors());
     // One thread for each vector:
     kernelSetup s = vector_setup();
@@ -86,48 +88,56 @@ CollOfScalar CollOfVector::norm() const {
 
 
 // ------ DOT ------
-CollOfScalar CollOfVector::dot(const CollOfVector& rhs) const {
+CollOfScalar CollOfVector::dot(const CollOfVector& rhs) const
+{
     CollOfScalar out(numVectors());
     // One thread for each vector:
     kernelSetup s = vector_setup();
     dotKernel<<< s.grid, s.block >>>( out.data(),
-				      this->data(),
-				      rhs.data(),
-				      out.size(),
-				      this->dim());
+                      this->data(),
+                      rhs.data(),
+                      out.size(),
+                      this->dim());
     return out;
 }
 
 
-const double* CollOfVector::data() const {
+const double* CollOfVector::data() const
+{
     return elements_.data();
 }
 
-double* CollOfVector::data() {
+double* CollOfVector::data()
+{
     return elements_.data();
 }
 
 
-int CollOfVector::dim() const {
+int CollOfVector::dim() const
+{
     return dim_;
 }
 
-int CollOfVector::numVectors() const {
+int CollOfVector::numVectors() const
+{
     if ( dim_ == 0 ) {
-	OPM_THROW(std::runtime_error, "Calling numVectors() on a CollOfVector of dimension 0\n --> Dividing by zero!");
+       OPM_THROW(std::runtime_error, "Calling numVectors() on a CollOfVector of dimension 0\n --> Dividing by zero!");
     }
     return elements_.size()/dim_;
 }
 
-int CollOfVector::numElements() const {
+int CollOfVector::numElements() const
+{
     return elements_.size();
 }
 
-kernelSetup CollOfVector::vector_setup() const {
+kernelSetup CollOfVector::vector_setup() const
+{
     return vector_setup_;
 }
 
-kernelSetup CollOfVector::element_setup() const {
+kernelSetup CollOfVector::element_setup() const
+{
     return elements_.setup();
 }
 
@@ -139,36 +149,38 @@ kernelSetup CollOfVector::element_setup() const {
 // Instead we need the member function col(int) that work the same way.
 // operator[] is still used in the tests, and therefore also tests col.
 
-CollOfScalar CollOfVector::operator[](const int index) const {
+CollOfScalar CollOfVector::operator[](const int index) const
+{
     return col(index);
 }
 
-CollOfScalar CollOfVector::col(const int index) const {
+CollOfScalar CollOfVector::col(const int index) const
+{
     
     if ( index < 0 || index >= dim_) {
-	OPM_THROW(std::runtime_error, "Illigal dimension index " << index << " for a vector of dimension " << dim_);
+       OPM_THROW(std::runtime_error, "Illigal dimension index " << index << " for a vector of dimension " << dim_);
     }
     
     CollOfScalar out(numVectors());
     kernelSetup s = vector_setup();
     collOfVectorOperatorIndexKernel<<<s.grid,s.block>>>( out.data(),
-							 this->data(),
-							 out.size(),
-							 index,
-							 dim_);	
+                             this->data(),
+                             out.size(),
+                             index,
+                             dim_); 
     return out;
 }
 
 __global__ void wrapCollOfVector::collOfVectorOperatorIndexKernel( double* out,
-								   const double* vec,
-								   const int size_out,
-								   const int index,
-								   const int dim)
+                                   const double* vec,
+                                   const int size_out,
+                                   const int index,
+                                   const int dim)
 {
     // Index:
     const int i = myID();
     if ( i < size_out ) {
-	out[i] = vec[i*dim + index];
+        out[i] = vec[i*dim + index];
     }
 }
 
@@ -177,35 +189,35 @@ __global__ void wrapCollOfVector::collOfVectorOperatorIndexKernel( double* out,
 // --------- NORM KERNEL ---------------------
 
 __global__ void wrapCollOfVector::normKernel( double* out,
-					      const double* vectors,
-					      const int numVectors,
-					      const int dim)
+                          const double* vectors,
+                          const int numVectors,
+                          const int dim)
 {
     const int index = myID();
     if ( index < numVectors ){
-	double norm = 0;
-	for ( int i = 0; i < dim; i++) {
-	    norm += vectors[index*dim + i]*vectors[index*dim + i];
-	}
-	out[index] = sqrt(norm);
+        double norm = 0;
+        for ( int i = 0; i < dim; i++) {
+            norm += vectors[index*dim + i]*vectors[index*dim + i];
+        }
+        out[index] = sqrt(norm);
     }
 }
 
 // --------- DOT KERNEL ---------------------------
 
 __global__ void wrapCollOfVector::dotKernel( double* out,
-					     const double* lhs,
-					     const double* rhs,
-					     const int numVectors,
-					     const int dim)
+                         const double* lhs,
+                         const double* rhs,
+                         const int numVectors,
+                         const int dim)
 {
     const int index = myID();
     if ( index < numVectors ) {
-	double dot = 0.0;
-	for ( int i = 0; i < dim; ++i ) {
-	    dot += lhs[index*dim + i] * rhs[index*dim + i];
-	}
-	out[index] = dot;
+        double dot = 0.0;
+        for ( int i = 0; i < dim; ++i ) {
+            dot += lhs[index*dim + i] * rhs[index*dim + i];
+        }
+        out[index] = dot;
     }
 }
 
@@ -246,9 +258,9 @@ CollOfVector equelleCUDA::operator*(const CollOfVector& vec, const CollOfScalar&
     CollOfVector out = vec;
     kernelSetup s = out.vector_setup();
     collvecMultCollscal_kernel<<<s.grid, s.block>>>( out.data(),
-						     scal.data(),
-						     out.numVectors(),
-						     out.dim());
+                             scal.data(),
+                             out.numVectors(),
+                             out.dim());
     return out;
 }
 
@@ -256,9 +268,9 @@ CollOfVector equelleCUDA::operator*(const CollOfScalar& scal, const CollOfVector
     CollOfVector out = vec;
     kernelSetup s = out.vector_setup();
     collvecMultCollscal_kernel<<<s.grid, s.block>>>( out.data(),
-						     scal.data(),
-						     out.numVectors(),
-						     out.dim());
+                             scal.data(),
+                             out.numVectors(),
+                             out.dim());
     return out;
 }
 
@@ -266,9 +278,9 @@ CollOfVector equelleCUDA::operator/(const CollOfVector& vec, const CollOfScalar&
     CollOfVector out = vec;
     kernelSetup s = out.vector_setup();
     collvecDivCollscal_kernel<<<s.grid, s.block>>>( out.data(),
-						    scal.data(),
-						    out.numVectors(),
-						    out.dim());
+                            scal.data(),
+                            out.numVectors(),
+                            out.dim());
     return out;
 }
 
@@ -280,28 +292,28 @@ CollOfVector equelleCUDA::operator/(const CollOfVector& vec, const Scalar scal) 
 
 // KERNELS
 __global__ void wrapCollOfVector::collvecMultCollscal_kernel( double* vector,
-							      const double* scal,
-							      const int numVectors,
-							      const int dim)
+                                  const double* scal,
+                                  const int numVectors,
+                                  const int dim)
 {
     int vec = myID();
     if ( vec < numVectors ) {
-	for ( int i = 0; i < dim; ++i ) {
-	    vector[vec*dim + i] *= scal[vec];
-	}
+        for ( int i = 0; i < dim; ++i ) {
+            vector[vec*dim + i] *= scal[vec];
+        }
     }
 }
 
 __global__ void wrapCollOfVector::collvecDivCollscal_kernel( double* vector,
-							     const double* scal,
-							     const int numVectors,
-							     const int dim)
+                                 const double* scal,
+                                 const int numVectors,
+                                 const int dim)
 {
     int vec = myID();
     if ( vec < numVectors ) {
-	for ( int i = 0; i < dim; i++ ) {
-	    vector[vec*dim + i] = vector[vec*dim + i] / scal[vec];
-	}
+        for ( int i = 0; i < dim; i++ ) {
+            vector[vec*dim + i] = vector[vec*dim + i] / scal[vec];
+        }
     }
 
 }

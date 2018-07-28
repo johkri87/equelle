@@ -188,7 +188,8 @@ thrust::device_vector<int> wrapDeviceGrid::onFromFullIndices( const thrust::devi
 thrust::device_vector<int> wrapDeviceGrid::onFromSubsetIndices( const thrust::device_vector<int>& inData,
                                 const thrust::device_vector<int>& from_set,
                                 const thrust::device_vector<int>& to_set,
-                                const int full_size) {
+                                const int full_size)
+{
     
     thrust::device_vector<int> temp_full = extendToFullIndices(inData, from_set, full_size);
     return onFromFullIndices(temp_full, to_set);
@@ -227,7 +228,6 @@ thrust::device_vector<int> wrapDeviceGrid::extendToFullIndices( const thrust::de
                                       from_ptr,
                                       from_set.size(),
                                       in_data_ptr);
-    
       
     return out;
 }
