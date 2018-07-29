@@ -245,7 +245,7 @@ CollOfVector operator-(const CollOfVector& lhs, const CollOfVector& rhs);
   Works as a wrapper for the CUDA kernel which negate collection of scalars.
 */
 CollOfVector operator-(const CollOfVector& arg);
-
+CollOfVector& operator-(CollOfVector&& arg);
 
 /*!
   Overloaded operator * for Scalar * CollOfVector. Elementwise multiplication

@@ -369,9 +369,22 @@ CollOfScalar equelleCUDA::operator/(const Scalar lhs, const CollOfScalar& rhs)
 }
 
 CollOfScalar equelleCUDA::operator-(const CollOfScalar& arg) {
-    return -1.0*arg;
+    CollOfScalar out(arg);
+    kernelSetup s = out.setup();
+    out.val_ = -out.val_;
+    out.der_ = -out.der_;
+    return out;
 }
 
+CollOfScalar& equelleCUDA::operator-(CollOfScalar&& arg) {
+    arg.val_ = -std::move(arg.val_);
+    arg.der_ = -std::move(arg.der_);
+    return arg;
+}
+
+/*CollOfScalar equelleCUDA::operator-(const CollOfScalar& arg) {
+    return -arg;
+}*/
 
 //  >
 CollOfBool equelleCUDA::operator>(const CollOfScalar& lhs, const CollOfScalar& rhs)

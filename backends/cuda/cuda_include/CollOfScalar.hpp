@@ -260,9 +260,10 @@ public:
 
     /*!
       Unary minus
-      \return A collection with the negative values of the inpur collection.
+      \return A collection with the negative values of the input collection.
     */
     friend CollOfScalar operator-(const CollOfScalar& arg);
+    friend CollOfScalar& operator-(CollOfScalar&& arg);
 
 
     // ----------- Arithmetic operations as friends end ---------------

@@ -21,6 +21,7 @@
 #include "DeviceGrid.hpp"
 #include "CollOfIndices.hpp"
 #include "device_functions.cuh"
+#include "common_kernels.cuh"
 
 
 // Implementation of the class CudaArray
@@ -314,9 +315,18 @@ CudaArray equelleCUDA::operator/(const Scalar lhs, const CudaArray& rhs)
 
 CudaArray equelleCUDA::operator-(const CudaArray& arg)
 {
-    return -1.0*arg;
+    CudaArray out = arg;
+    kernelSetup s = out.setup();
+    equelleKernels::negate_kernel<<<s.grid,s.block>>>(out.data(), out.size());
+    return out;
 }
 
+CudaArray& equelleCUDA::operator-(CudaArray&& arg)
+{
+    kernelSetup s = arg.setup();
+    equelleKernels::negate_kernel<<<s.grid,s.block>>>(arg.data(), arg.size());
+    return arg;
+}
 
 //  >
 CollOfBool equelleCUDA::operator>(const CudaArray& lhs, const CudaArray& rhs)

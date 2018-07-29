@@ -13,6 +13,7 @@
 #include "CollOfScalar.hpp"
 #include "equelleTypedefs.hpp"
 #include "device_functions.cuh"
+#include "common_kernels.cuh"
 
 using namespace equelleCUDA;
 using namespace wrapCollOfVector;
@@ -240,7 +241,16 @@ CollOfVector equelleCUDA::operator-(const CollOfVector& lhs, const CollOfVector&
 }
 
 CollOfVector equelleCUDA::operator-(const CollOfVector& arg) {
-    return (-1.0)*arg;
+    CollOfVector out = arg;
+    kernelSetup s = out.element_setup();
+    equelleKernels::negate_kernel<<<s.grid, s.block>>>(out.data(), out.numElements());
+    return out;
+}
+
+CollOfVector& equelleCUDA::operator-(CollOfVector&& arg) {
+    kernelSetup s = arg.element_setup();
+    equelleKernels::negate_kernel<<<s.grid, s.block>>>(arg.data(), arg.numElements());
+    return arg;
 }
 
 CollOfVector equelleCUDA::operator*(const Scalar lhs, const CollOfVector& rhs) {

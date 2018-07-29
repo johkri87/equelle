@@ -238,6 +238,7 @@ public:
     friend CudaMatrix operator*(const CudaMatrix& lhs, const Scalar rhs);
     friend CudaMatrix operator*(const Scalar lhs, const CudaMatrix& rhs);
     friend CudaMatrix operator-(const CudaMatrix& arg);
+    friend CudaMatrix& operator-(CudaMatrix&& arg);
     // Check if the matrix is a transpose or not.
     bool isTranspose() const;
 
@@ -362,11 +363,11 @@ CudaMatrix operator*(const Scalar lhs, const CudaMatrix& rhs);
 
 //! Unary minus
 /*!
-  Returns -1.0* arg;
+  Returns -arg;
 */
 CudaMatrix operator-(const CudaMatrix& arg);
 
-
+CudaMatrix& operator-(CudaMatrix&& arg);
 
 //! Kernels and other related functions to for CudaMatrix:
 namespace wrapCudaMatrix

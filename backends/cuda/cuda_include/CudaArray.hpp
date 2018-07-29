@@ -505,6 +505,8 @@ CudaArray operator/(const Scalar lhs, const CudaArray& rhs);
 */
 CudaArray operator-(const CudaArray& arg);
 
+CudaArray& operator-(CudaArray&& arg);
+
 /*!
   Greater than operator
   \return Collection of Booleans consisting of

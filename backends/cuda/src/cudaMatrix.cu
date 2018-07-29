@@ -18,6 +18,7 @@
 #include "CollOfScalar.hpp" // for constructor for diagonal matrix.
 #include "equelleTypedefs.hpp"
 #include "device_functions.cuh"
+#include "common_kernels.cuh"
 
 using namespace equelleCUDA;
 using namespace wrapCudaMatrix;
@@ -1091,9 +1092,19 @@ CudaMatrix equelleCUDA::operator*(const Scalar lhs, const CudaMatrix& rhs)
 
 CudaMatrix equelleCUDA::operator-(const CudaMatrix& arg)
 {
-    return -1.0*arg;
+    CudaMatrix out(arg);
+    kernelSetup s(out.nnz_);
+    equelleKernels::negate_kernel<<<s.grid, s.block>>>(out.csrVal_, out.nnz_);
+    return out;
 }
 
+
+CudaMatrix& equelleCUDA::operator-(CudaMatrix&& arg)
+{
+    kernelSetup s(arg.nnz_);
+    equelleKernels::negate_kernel<<<s.grid, s.block>>>(arg.csrVal_, arg.nnz_);
+    return arg;
+}
 
 // Diagonal multiplyer:
 CudaMatrix CudaMatrix::diagonalMultiply(const CudaMatrix& rhs) const
