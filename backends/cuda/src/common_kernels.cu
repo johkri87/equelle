@@ -3,7 +3,7 @@
 
 using namespace equelleCUDA;
 
-__global__ void EquelleKernels::multiplication_kernel(double* out, const double* rhs, const int size)
+__global__ void equelleKernels::multiplication_kernel(double* out, const double* rhs, const int size)
 {
     const int index = myID();
     if ( index < size ) {
@@ -11,7 +11,7 @@ __global__ void EquelleKernels::multiplication_kernel(double* out, const double*
     }
 }
 
-__global__ void EquelleKernels::multiplication_kernel(double* out, const double rhs, const int size)
+__global__ void equelleKernels::multiplication_kernel(double* out, const double rhs, const int size)
 {
     const int index = myID();
     if ( index < size ) {
@@ -19,7 +19,7 @@ __global__ void EquelleKernels::multiplication_kernel(double* out, const double 
     }
 }
 
-__global__ void EquelleKernels::addition_kernel(double* out, const double* rhs, const int size)
+__global__ void equelleKernels::addition_kernel(double* out, const double* rhs, const int size)
 {
     const int index = myID();
     if ( index < size ) {
@@ -27,7 +27,7 @@ __global__ void EquelleKernels::addition_kernel(double* out, const double* rhs, 
     }
 }
 
-__global__ void EquelleKernels::division_kernel(double* out, const double* rhs, const int size)
+__global__ void equelleKernels::division_kernel(double* out, const double* rhs, const int size)
 {
     const int index = myID();
     if ( index < size ) {
@@ -35,7 +35,7 @@ __global__ void EquelleKernels::division_kernel(double* out, const double* rhs, 
     }
 }
 
-__global__ void EquelleKernels::division_kernel(const double lhs, double* out, const int size)
+__global__ void equelleKernels::division_kernel(const double lhs, double* out, const int size)
 {
     const int index = myID();
     if ( index < size ) {
@@ -43,7 +43,7 @@ __global__ void EquelleKernels::division_kernel(const double lhs, double* out, c
     }
 }
 
-__global__ void EquelleKernels::division_kernel(double* out, const double rhs, const int size)
+__global__ void equelleKernels::division_kernel(double* out, const double rhs, const int size)
 {
     const int index = myID();
     if ( index < size ) {
@@ -51,7 +51,7 @@ __global__ void EquelleKernels::division_kernel(double* out, const double rhs, c
     }
 }
 
-__global__ void EquelleKernels::negate_kernel(double* out, const int size)
+__global__ void equelleKernels::negate_kernel(double* out, const int size)
 {
     const int index = myID();
     if ( index < size ) {
@@ -59,7 +59,7 @@ __global__ void EquelleKernels::negate_kernel(double* out, const int size)
     }
 }
 
-__global__ void EquelleKernels::square_kernel(double* out, const int size)
+__global__ void equelleKernels::square_kernel(double* out, const int size)
 {
     const int index = myID();
     if ( index < size ) {
@@ -67,7 +67,7 @@ __global__ void EquelleKernels::square_kernel(double* out, const int size)
     }
 }
 
-__global__ void EquelleKernels::sqrt_kernel(double* out, const int size)
+__global__ void equelleKernels::sqrt_kernel(double* out, const int size)
 {
     const int index = myID();
     if ( index < size ) {
@@ -75,7 +75,7 @@ __global__ void EquelleKernels::sqrt_kernel(double* out, const int size)
     }
 }
 
-__global__ void EquelleKernels::reciprocal_kernel(double* out, const int size)
+__global__ void equelleKernels::reciprocal_kernel(double* out, const int size)
 {
     const int index = myID();
     if ( index < size ) {
@@ -83,7 +83,7 @@ __global__ void EquelleKernels::reciprocal_kernel(double* out, const int size)
     }
 }
 
-__global__ void EquelleKernels::abs_kernel(double* out, const int size)
+__global__ void equelleKernels::abs_kernel(double* out, const int size)
 {
     const int i = myID();
     if ( i < size ) {
