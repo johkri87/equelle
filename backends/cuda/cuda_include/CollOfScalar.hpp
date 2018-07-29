@@ -86,11 +86,11 @@ public:
 
     // Move constructor from CudaArray and CudaMatrix
     // Only der is moved. val is copied.
-    CollOfScalar(const CudaArray& val, CudaMatrix&& der) noexcept;
+    CollOfScalar(const CudaArray& val, CudaMatrix&& der);
 
     // Move constructor from CudaArray and CudaMatrix
     // Only der is moved. val is copied.
-    CollOfScalar(CudaArray&& val, const CudaMatrix& der) noexcept;
+    CollOfScalar(CudaArray&& val, const CudaMatrix& der);
 
     //! Copy assignment operator
     /*!
