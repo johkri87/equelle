@@ -12,6 +12,7 @@ __global__ void negate_kernel(double* out, const int size);
 __global__ void square_kernel(double* out, const int size);
 __global__ void sqrt_kernel(double* out, const int size);
 __global__ void reciprocal_kernel(double* out, const int size);
+__global__ void inverse_squared_kernel(double* out, const int size);
 __global__ void abs_kernel(double* out, const int size);
 }
 }

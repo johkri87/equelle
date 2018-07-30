@@ -83,6 +83,15 @@ __global__ void equelleKernels::reciprocal_kernel(double* out, const int size)
     }
 }
 
+__global__ void equelleKernels::inverse_squared_kernel(double* out, const int size)
+{
+    const int index = myID();
+    if ( index < size ) {
+        double val = out[index];
+        out[index] = 1.0/(val*val);
+    }
+}
+
 __global__ void equelleKernels::abs_kernel(double* out, const int size)
 {
     const int i = myID();
