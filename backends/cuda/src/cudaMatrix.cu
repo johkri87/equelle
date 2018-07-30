@@ -875,71 +875,83 @@ CudaMatrix equelleCUDA::multiplyAdd(const CudaMatrix& a, const CudaMatrix& b, co
     if ( a.diagonal_ ) {
         return a.diagonalMultiply(b) + c;
     }
-
-    return equelleCUDA::gemm2(a,b,c,1.0,1.0);
+    double alpha = 1.0;
+    double beta = 1.0;
+    return equelleCUDA::gemm2(a,b,c,&alpha,&beta);
 }
 
 
 // gemm2 performs the operation D = alpha ∗ A ∗ B + beta ∗ C
-CudaMatrix equelleCUDA::gemm2(const CudaMatrix& A, const CudaMatrix& B, const CudaMatrix& C, double alpha, double beta)
+CudaMatrix equelleCUDA::gemm2(const CudaMatrix& A, const CudaMatrix& B, const CudaMatrix& C, const double* alpha, const double* beta)
 {
     // Create an empty matrix. Need to set rows, cols, nnz, and allocate arrays!
     CudaMatrix out;
     // Legal matrix sizes depend on whether the matrices are transposed or not!
     int innerSize = out.confirmMultSize(A, B);
-
     // Set up cuSPARSE
     csrgemm2Info_t info;
-    cusparseSetPointerMode(CUSPARSE, CUSPARSE_POINTER_MODE_HOST);
+    out.sparseStatus_ = cusparseSetPointerMode(CUSPARSE, CUSPARSE_POINTER_MODE_HOST);
+    out.checkError_("cusparseSetPointerMode() in equelleCUDA::gemm2");
     cusparseCreateCsrgemm2Info(&info);
 
     // Allocate buffer
     size_t bufferSize;
     void* buffer = NULL;
-    cusparseDcsrgemm2_bufferSizeExt(CUSPARSE, out.rows_, out.cols_, innerSize, &alpha,
+    out.sparseStatus_ = cusparseDcsrgemm2_bufferSizeExt(CUSPARSE, out.rows_, out.cols_, innerSize, alpha,
                                      A.description_, A.nnz_, A.csrRowPtr_, A.csrColInd_,
                                      B.description_, B.nnz_, B.csrRowPtr_, B.csrColInd_,
-                                     &beta,
+                                     beta,
                                      C.description_, C.nnz_, C.csrRowPtr_, C.csrColInd_,
                                      info, &bufferSize);
-    cudaMalloc(&buffer, bufferSize);
-    cudaMalloc((void**)&out.csrRowPtr_, sizeof(int)*(out.rows_+1));
+
+    out.checkError_("cusparseDcsrgemm2_bufferSizeExt() in equelleCUDA::gemm2");
+    out.cudaStatus_ = cudaMalloc(&buffer, bufferSize);
+    out.checkError_("cudaMalloc(&buffer, bufferSize) in equelleCUDA::gemm2");
+    out.cudaStatus_ = cudaMalloc((void**)&out.csrRowPtr_, sizeof(int)*(out.rows_+1));
+    out.checkError_("cudaMalloc((void**)&out.csrRowPtr_, sizeof(int)*(out.rows_+1)) in equelleCUDA::gemm2");
+    //std::cout << "Buffer size in bytes: " << bufferSize << std::endl;
     // Compute NNZ
     int* nnzTotalDevHostPtr = &out.nnz_;
-    cusparseXcsrgemm2Nnz(CUSPARSE,
+    out.sparseStatus_ = cusparseXcsrgemm2Nnz(CUSPARSE,
                          out.rows_, out.cols_, innerSize,
                          A.description_, A.nnz_, A.csrRowPtr_, A.csrColInd_,
                          B.description_, B.nnz_, B.csrRowPtr_, B.csrColInd_,
                          C.description_, C.nnz_, C.csrRowPtr_, C.csrColInd_,
                          out.description_, out.csrRowPtr_,
                          nnzTotalDevHostPtr, info, buffer );
+    out.checkError_("cusparseXcsrgemm2Nnz() in equelleCUDA::gemm2");
     if (NULL != nnzTotalDevHostPtr) {
         out.nnz_ = *nnzTotalDevHostPtr;
     }else
     {
         int baseC;
-        cudaMemcpy(&out.nnz_, out.csrRowPtr_+out.rows_, sizeof(int), cudaMemcpyDeviceToHost);
-        cudaMemcpy(&baseC, out.csrRowPtr_, sizeof(int), cudaMemcpyDeviceToHost);
+        out.cudaStatus_ = cudaMemcpy(&out.nnz_, out.csrRowPtr_+out.rows_, sizeof(int), cudaMemcpyDeviceToHost);
+        out.checkError_("cudaMemcpy(&out.nnz_, out.csrRowPtr_+out.rows_, sizeof(int), cudaMemcpyDeviceToHost) in equelleCUDA::gemm2");
+        out.cudaStatus_ = cudaMemcpy(&baseC, out.csrRowPtr_, sizeof(int), cudaMemcpyDeviceToHost);
+        out.checkError_("cudaMemcpy(&baseC, out.csrRowPtr_, sizeof(int), cudaMemcpyDeviceToHost) in equelleCUDA::gemm2");
         out.nnz_ -= baseC;
     }
 
     // Allocate memory for output matrix
-    cudaMalloc((void**)&out.csrColInd_, sizeof(int)*out.nnz_);
-    cudaMalloc((void**)&out.csrVal_, sizeof(double)*out.nnz_);
-
+    out.cudaStatus_ = cudaMalloc((void**)&out.csrColInd_, sizeof(int)*out.nnz_);
+    out.checkError_("cudaMalloc((void**)&out.csrColInd_, sizeof(int)*out.nnz_) in equelleCUDA::gemm2");
+    out.cudaStatus_ = cudaMalloc((void**)&out.csrVal_, sizeof(double)*out.nnz_);
+    out.checkError_("cudaMalloc((void**)&out.csrVal_, sizeof(double)*out.nnz_) in equelleCUDA::gemm2");
     // Perform the gemm2 operation
     // D = alpha ∗ A ∗ B + beta ∗ C
-    cusparseDcsrgemm2(CUSPARSE, out.rows_, out.cols_, innerSize, &alpha, 
+    out.sparseStatus_ = cusparseDcsrgemm2(CUSPARSE, out.rows_, out.cols_, innerSize, alpha, 
                       A.description_, A.nnz_, A.csrVal_, A.csrRowPtr_, A.csrColInd_, 
                       B.description_, B.nnz_, B.csrVal_, B.csrRowPtr_, B.csrColInd_,
-                      &beta,
+                      beta,
                       C.description_, C.nnz_, C.csrVal_, C.csrRowPtr_, C.csrColInd_,
                       out.description_, out.csrVal_, out.csrRowPtr_, out.csrColInd_,
                       info, buffer);
-
+    out.checkError_("cusparseDcsrgemm2() in equelleCUDA::gemm2");
+    out.cudaStatus_ = cudaFree(buffer);
+    out.checkError_("cudaFree(buffer) in equelleCUDA::gemm2");
     // Cleanup
-    cusparseDestroyCsrgemm2Info(info);
-
+    out.sparseStatus_ = cusparseDestroyCsrgemm2Info(info);
+    out.checkError_("cusparseDestroyCsrgemm2Info(info) in equelleCUDA::gemm2");
     return out;
 }
 
@@ -966,7 +978,7 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs)
     if ( lhs.diagonal_ ) {
         return lhs.diagonalMultiply(rhs);
     }
-    
+
     // Create an empty matrix. Need to set rows, cols, nnz, and allocate arrays!
     CudaMatrix out;
     // Legal matrix sizes depend on whether the matrices are transposed or not!

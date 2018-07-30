@@ -228,7 +228,7 @@ public:
     friend CudaMatrix cudaMatrixSum(const CudaMatrix& lhs,
                     const CudaMatrix& rhs,
                     const double beta);
-    friend CudaMatrix gemm2(const CudaMatrix& A, const CudaMatrix& B, const CudaMatrix& C, double alpha, double beta);
+    friend CudaMatrix gemm2(const CudaMatrix& A, const CudaMatrix& B, const CudaMatrix& C, const double* alpha, const double* beta);
     friend CudaMatrix multiplyAdd(const CudaMatrix& a, const CudaMatrix& b, const CudaMatrix& c);
     friend CudaArray  multiplyAdd(const CudaMatrix& a, const CudaArray& b, const CudaArray& c);
     friend CudaMatrix multiplyAdd(const CudaMatrix& a, const Scalar b, const CudaMatrix& c);
@@ -317,7 +317,7 @@ CudaMatrix operator-(const CudaMatrix& lhs, const CudaMatrix& rhs);
 CudaMatrix cudaMatrixSum( const CudaMatrix& lhs,
               const CudaMatrix& rhs,
               const double beta);
-CudaMatrix gemm2(const CudaMatrix& A, const CudaMatrix& B, const CudaMatrix& C, double alpha, double beta);
+CudaMatrix gemm2(const CudaMatrix& A, const CudaMatrix& B, const CudaMatrix& C, const double* alpha, const double* beta);
 
 //! Matrix * Matrix operator
 /*!
