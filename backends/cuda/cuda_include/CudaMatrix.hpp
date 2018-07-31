@@ -18,6 +18,7 @@
 #include "equelleTypedefs.hpp"
 //#include "CollOfScalar.hpp" // forward declaration of this class.
 #include "CudaArray.hpp"
+#include "CusparseManager.hpp"
 
 namespace equelleCUDA {
 

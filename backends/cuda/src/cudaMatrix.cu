@@ -979,8 +979,9 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs)
         return lhs.diagonalMultiply(rhs);
     }
 
+    return CusparseManager::matrixMultiply(lhs, rhs);
     // Create an empty matrix. Need to set rows, cols, nnz, and allocate arrays!
-    CudaMatrix out;
+    /*CudaMatrix out;
     // Legal matrix sizes depend on whether the matrices are transposed or not!
     int innerSize = out.confirmMultSize(lhs, rhs);
 
@@ -1040,7 +1041,7 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs)
                      out.csrVal_, out.csrRowPtr_, out.csrColInd_);
     out.checkError_("cusparseDcsrgemm() in CudaMatrix operator *");
     
-    return out;
+    return out;*/
 }
 
 

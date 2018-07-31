@@ -12,12 +12,14 @@ class CudaMatrix;
 class CusparseManager
 {
 public:
+    static CudaMatrix matrixMultiply(const CudaMatrix& A, const CudaMatrix& B);
     static CudaMatrix matrixMultiply2(const CudaMatrix& A, const CudaMatrix& B);
 private:
     CusparseManager();
     ~CusparseManager();
 
     CudaMatrix gemm2(const CudaMatrix& A, const CudaMatrix& B, const CudaMatrix& C, const double* alpha, const double* beta);
+    CudaMatrix gemm(const CudaMatrix& lhs, const CudaMatrix& rhs);
     static CusparseManager& instance();
 
     // cuSPARSE  and CUDA variables
