@@ -222,6 +222,7 @@ public:
     */
     CudaMatrix transpose() const;
 
+    friend class CusparseManager;
     friend CudaMatrix operator+(const CudaMatrix& lhs, const CudaMatrix& rhs);
     friend CudaMatrix operator-(const CudaMatrix& lhs, const CudaMatrix& rhs);
     // C = A + beta*B

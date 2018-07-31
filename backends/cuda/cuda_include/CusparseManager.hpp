@@ -12,12 +12,12 @@ class CudaMatrix;
 class CusparseManager
 {
 public:
-    static CudaMatrix matrixMultiply(const CudaMatrix& A, const CudaMatrix& B);
+    static CudaMatrix matrixMultiply2(const CudaMatrix& A, const CudaMatrix& B);
 private:
     CusparseManager();
     ~CusparseManager();
 
-    CudaMatrix gemm2(const CudaMatrix& A, const CudaMatrix& B, const CudaMatrix& C, double* alpha, double* beta);
+    CudaMatrix gemm2(const CudaMatrix& A, const CudaMatrix& B, const CudaMatrix& C, const double* alpha, const double* beta);
     static CusparseManager& instance();
 
     // cuSPARSE  and CUDA variables
@@ -27,6 +27,7 @@ private:
     cusparseStatus_t sparseStatus_;
     cudaError_t cudaStatus_;
     void* buffer_;
+    size_t currentBufferSize_;
 };
 }
 
