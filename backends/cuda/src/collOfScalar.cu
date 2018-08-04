@@ -352,7 +352,15 @@ CollOfScalar equelleCUDA::operator*(const CollOfScalar& lhs, const Scalar rhs)
 
 CollOfScalar equelleCUDA::operator/(const CollOfScalar& lhs, const Scalar rhs)
 {
-    return ( (1/rhs) * lhs);
+    CudaArray val = lhs.val_ / rhs;
+    if ( lhs.autodiff_ ) {
+        // (u/a)' = (u'*a)/(a^2) = u'/rhs
+        // where u = lhs and v = rhs
+        CudaMatrix der = lhs.der_/rhs;
+        return CollOfScalar(std::move(val), std::move(der));
+    }
+    return CollOfScalar(std::move(val));
+    //return ( (1/rhs) * lhs);
 }
 
 CollOfScalar equelleCUDA::operator/(const Scalar lhs, const CollOfScalar& rhs)

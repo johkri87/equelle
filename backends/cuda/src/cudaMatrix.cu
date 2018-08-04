@@ -1120,7 +1120,17 @@ CudaMatrix equelleCUDA::operator/(const Scalar lhs, const CudaMatrix& rhs)
 
 CudaMatrix equelleCUDA::operator/(const CudaMatrix& lhs, const Scalar rhs)
 {
-    return (lhs / rhs);
+    // lhs should not be empty
+    if ( lhs.isEmpty() ) {
+        OPM_THROW(std::runtime_error, "Calling CudaMatrix / Scalar with empty matrix...");
+    }
+    
+    CudaMatrix out(lhs);
+    kernelSetup s(out.nnz_);
+    equelleKernels::division_kernel<<<s.grid, s.block>>>(out.csrVal_,
+                                                         rhs,
+                                                         out.nnz_);
+    return out;
 }
 
 CudaMatrix equelleCUDA::operator-(const CudaMatrix& arg)
