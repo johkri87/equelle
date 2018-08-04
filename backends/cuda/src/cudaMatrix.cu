@@ -1107,7 +1107,7 @@ CudaMatrix equelleCUDA::operator/(const Scalar lhs, const CudaMatrix& rhs)
 {
     // rhs should not be empty
     if ( rhs.isEmpty() ) {
-        OPM_THROW(std::runtime_error, "Calling CudaMatrix / Scalar with empty matrix...");
+        OPM_THROW(std::runtime_error, "Calling Scalar / CudaMatrix with empty matrix...");
     }
     
     CudaMatrix out(rhs);
