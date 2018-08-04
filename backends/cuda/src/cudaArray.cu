@@ -31,8 +31,7 @@ using namespace wrapCudaArray;
 
 CudaArray::CudaArray() 
     : size_(0), 
-      dev_values_(0),
-      setup_(0)
+      dev_values_(0)
 {
     // Intentionally left blank
 }
@@ -41,18 +40,16 @@ CudaArray::CudaArray()
 // Allocating memory without initialization
 CudaArray::CudaArray(const int size) 
     : size_(size),
-      dev_values_(0),
-      setup_(size_)
+      dev_values_(0)
 {
     cudaStatus_ = cudaMalloc( (void**)&dev_values_, size_*sizeof(double));
     checkError_("cudaMalloc in CudaArray::CudaArray(int)");
-    setUniformDouble<<<setup_.grid, setup_.block>>>( dev_values_, 0.0, size_);
+    setUniformDouble<<<setup().grid, setup().block>>>( dev_values_, 0.0, size_);
 }
 
 CudaArray::CudaArray(const int size, const double value)
     : size_(size),
-      dev_values_(0),
-      setup_(size_)
+      dev_values_(0)
 {
     // Can not use cudaMemset as it sets float values on a given
     // number of bytes.
@@ -62,7 +59,7 @@ CudaArray::CudaArray(const int size, const double value)
     cudaStatus_ = cudaMalloc( (void**)&dev_values_, size_*sizeof(double));
     checkError_("cudaMalloc in CudaArray::CudaArray(int, double)");
      
-    setUniformDouble<<<setup_.grid, setup_.block>>>( dev_values_, value, size_);
+    setUniformDouble<<<setup().grid, setup().block>>>( dev_values_, value, size_);
     //cudaStatus_ = cudaMemcpy(dev_values_, &host_vec[0], size_*sizeof(double),
     //                  cudaMemcpyHostToDevice);
     //checkError_("cudaMemcpy in CudaArray::CudaArray(int, double)");
@@ -73,8 +70,7 @@ CudaArray::CudaArray(const int size, const double value)
 // Constructor from vector, in order to do testing
 CudaArray::CudaArray(const std::vector<double>& host_vec)
     : size_(host_vec.size()),
-      dev_values_(0),
-      setup_(size_)
+      dev_values_(0)
 {
     cudaStatus_ = cudaMalloc( (void**)&dev_values_, size_*sizeof(double));
     checkError_("cudaMalloc in CudaArray::CudaArray(std::vector<double>)");
@@ -88,8 +84,7 @@ CudaArray::CudaArray(const std::vector<double>& host_vec)
 // Copy constructor
 CudaArray::CudaArray(const CudaArray& coll) 
     : size_(coll.size_), 
-      dev_values_(0),
-      setup_(size_)
+      dev_values_(0)
 {
     //std::cout << __PRETTY_FUNCTION__ << std::endl;
 
@@ -106,8 +101,7 @@ CudaArray::CudaArray(const CudaArray& coll)
 // Move constructor
 CudaArray::CudaArray(CudaArray&& coll) 
     : size_(coll.size_),
-      dev_values_(coll.dev_values_),
-      setup_(size_)
+      dev_values_(coll.dev_values_)
 {
     //std::cout << "CudaArray move constructor" << std::endl;
     coll.dev_values_ = 0;
@@ -196,7 +190,7 @@ double* CudaArray::data()
 
 kernelSetup CudaArray::setup() const
 {
-    return setup_;
+    return kernelSetup(size_);
 }
 
 // Assumes that values are already allocated on host
@@ -230,8 +224,7 @@ void CudaArray::checkError_(const std::string& msg) const
 CudaArray CudaArray::abs() const
 {
     CudaArray out(size_);
-    kernelSetup s = setup_;
-    abs_kernel<<<s.grid, s.block>>>(out.data(), dev_values_, size_);
+    abs_kernel<<<setup().grid, setup().block>>>(out.data(), dev_values_, size_);
     return out;
 }
 

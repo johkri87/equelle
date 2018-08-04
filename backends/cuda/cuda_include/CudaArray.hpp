@@ -138,11 +138,6 @@ private:
     int size_;
     double* dev_values_;
 
-    // Use 1D kernel grids for arithmetic operations
-    kernelSetup setup_;
-
-
-
     // Error handling
     //! check_Error throws an OPM exception if cudaStatus_ != cudaSuccess
     mutable cudaError_t cudaStatus_;
