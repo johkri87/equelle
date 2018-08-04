@@ -239,6 +239,8 @@ public:
     friend CudaArray  operator*(const CudaMatrix& mat, const CudaArray& vec);
     friend CudaMatrix operator*(const CudaMatrix& lhs, const Scalar rhs);
     friend CudaMatrix operator*(const Scalar lhs, const CudaMatrix& rhs);
+    friend CudaMatrix operator/(const CudaMatrix& lhs, const Scalar rhs);
+    friend CudaMatrix operator/(const Scalar lhs, const CudaMatrix& rhs);
     friend CudaMatrix operator-(const CudaMatrix& arg);
     friend CudaMatrix& operator-(CudaMatrix&& arg);
     // Check if the matrix is a transpose or not.
@@ -362,6 +364,9 @@ CudaMatrix operator*(const CudaMatrix& lhs, const Scalar rhs);
   \sa wrapCudaArray::scalMultColl_kernel
 */
 CudaMatrix operator*(const Scalar lhs, const CudaMatrix& rhs);
+
+CudaMatrix operator/(const CudaMatrix& lhs, const Scalar rhs);
+CudaMatrix operator/(const Scalar lhs, const CudaMatrix& rhs);
 
 //! Unary minus
 /*!
