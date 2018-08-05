@@ -756,7 +756,7 @@ CudaMatrix equelleCUDA::operator+(const CudaMatrix& lhs, const CudaMatrix& rhs)
         return lhs;
     } 
     else {
-        return cudaMatrixSum(lhs, rhs, 1.0);
+        return CusparseManager::matrixAddition(lhs, rhs);
     }
 }
 
@@ -766,13 +766,13 @@ CudaMatrix equelleCUDA::operator-(const CudaMatrix& lhs, const CudaMatrix& rhs)
     // zeros, and therefore just return the other matrix.
     // This is convenient when we implement autodiff by using CudaMatrix.
     if ( lhs.isEmpty() ) {
-        return -1.0*rhs;
+        return -rhs;
     }
     else if ( rhs.isEmpty() ) {
         return lhs;
     }
     else {
-        return cudaMatrixSum(lhs, rhs, -1.0);
+        return CusparseManager::matrixSubtraction(lhs, rhs);
     }
 }
 
