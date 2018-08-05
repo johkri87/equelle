@@ -152,7 +152,6 @@ CudaMatrix CusparseManager::gemm(const CudaMatrix& lhs, const CudaMatrix& rhs)
     // taken from the Nvidia cusparse documentation, section 9.2
     // Only additions are the error checking.
     int *nnzTotalDevHostPtr = &out.nnz_;
-    out.checkError_("cusparseSetPointerMode() in CusparseManager::gemm()");
     out.sparseStatus_ = cusparseXcsrgemmNnz( cusparseHandle_, 
                          lhs.operation_, rhs.operation_,
                          out.rows_, out.cols_, innerSize,
