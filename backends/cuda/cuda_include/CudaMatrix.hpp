@@ -243,6 +243,7 @@ public:
     friend CudaMatrix operator/(const Scalar lhs, const CudaMatrix& rhs);
     friend CudaMatrix operator-(const CudaMatrix& arg);
     friend CudaMatrix& operator-(CudaMatrix&& arg);
+    CudaMatrix diagonalMultiply(const CudaArray& lhs_diag_mat) const;
     // Check if the matrix is a transpose or not.
     bool isTranspose() const;
 
