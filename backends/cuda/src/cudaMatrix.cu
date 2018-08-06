@@ -18,6 +18,7 @@
 #include "CollOfScalar.hpp" // for constructor for diagonal matrix.
 #include "equelleTypedefs.hpp"
 #include "device_functions.cuh"
+#include "EquelleCUDATools.h"
 
 using namespace equelleCUDA;
 using namespace wrapCudaMatrix;
@@ -725,12 +726,26 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs) 
     out.cudaStatus_ = cudaMalloc( (void**)&out.csrRowPtr_, (out.rows_+1)*sizeof(int));
     out.checkError_("cudaMalloc(out.csrRowPtr_) in CudaMatrix operator +");
 
+
+
     // The following code for finding number of non-zeros is
     // taken from the Nvidia cusparse documentation, section 9.2
     // Only additions are the error checking.
     int *nnzTotalDevHostPtr = &out.nnz_;
     out.sparseStatus_ = cusparseSetPointerMode(CUSPARSE, CUSPARSE_POINTER_MODE_HOST);
     out.checkError_("cusparseSetPointerMode() in CudaMatrix operator *");
+
+    if ( lhs.isTranspose() ) {
+      if ( rhs.isTranspose() ) {
+        PUSH_RANGE("GEMM_NNZ_LHS_RHS_TRANS", 0)
+      } else {
+        PUSH_RANGE("GEMM_NNZ_LHS_TRANS", 0)
+      }
+    } else if ( rhs.isTranspose() ) {
+      PUSH_RANGE("GEMM_NNZ_RHS_TRANS", 0)
+    } else {
+      PUSH_RANGE("GEMM_NNZ", 0)
+    }
     out.sparseStatus_ = cusparseXcsrgemmNnz( CUSPARSE, 
 					     lhs.operation_, rhs.operation_,
 					     out.rows_, out.cols_, innerSize,
@@ -740,6 +755,7 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs) 
 					     rhs.csrRowPtr_, rhs.csrColInd_,
 					     out.description_,
 					     out.csrRowPtr_, nnzTotalDevHostPtr);
+    POP_RANGE
     out.checkError_("cusparseXcsrgemmNnz() in CudaMatrix operator *");
     if ( nnzTotalDevHostPtr != NULL ) {
 	out.nnz_ = *nnzTotalDevHostPtr;
@@ -760,7 +776,16 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs) 
     out.cudaStatus_ = cudaMalloc( (void**)&out.csrColInd_, out.nnz_*sizeof(int));
     out.checkError_("cudaMalloc(out.csrColInd_) in CudaMatrix operator *");
     
+    if ( lhs.isTranspose() ) {
+      PUSH_RANGE("GEMM_LHS_TRANS", 1)
+    } else if ( rhs.isTranspose() ) {
+      PUSH_RANGE("GEMM_RHS_TRANS", 1)
+    } else {
+      PUSH_RANGE("GEMM", 1)
+    }
+
     // 2) Multiply the matrices:
+    
     out.sparseStatus_ = cusparseDcsrgemm(CUSPARSE,
 					 lhs.operation_, rhs.operation_,
 					 out.rows_, out.cols_, innerSize,
@@ -771,7 +796,7 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs) 
 					 out.description_,
 					 out.csrVal_, out.csrRowPtr_, out.csrColInd_);
     out.checkError_("cusparseDcsrgemm() in CudaMatrix operator *");
-    
+    POP_RANGE
     return out;
 } // operator *
 
