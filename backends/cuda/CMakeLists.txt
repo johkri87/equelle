@@ -6,7 +6,7 @@ find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
 
-set( CMAKE_CXX_FLAGS "-std=c++14 -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter" )
+set( CMAKE_CXX_FLAGS "-std=c++14 -L/usr/local/cuda-8.0/lib64/libnvToolsExt.so -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter" )
 
 # Define 'EQUELLE_DEBUG' if we are in debug mode.
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -82,6 +82,7 @@ if (Boost_FOUND)
 			equelle_cuda
 			equelle_rt
 			opmsimulators opmgrid opmcommon
+			/usr/local/cuda-8.0/lib64/libnvToolsExt.so
 			boost_filesystem boost_system boost_regex
 			tinyxml ecl umfpack ${SUPERLU_LIB} dunecommon
 		)
