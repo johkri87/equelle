@@ -1172,6 +1172,9 @@ CudaMatrix CudaMatrix::diagonalMultiply(const CudaMatrix& rhs) const
 // lhs*this
 CudaMatrix CudaMatrix::diagonalMultiply(const CudaArray& lhs_diag_mat) const
 {
+    if(this->isEmpty()){
+      return CudaMatrix();
+    }
     // Make sure we do not call this function if this is not diagonal
     if ( this->diagonal_ ) {
         OPM_THROW(std::runtime_error, "Error in CudaMatrix::diagonalMultiply(const CudaArray& rhs)\n\tCaller matrix cannot be diagonal!");
