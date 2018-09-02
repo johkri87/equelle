@@ -249,13 +249,14 @@ __global__ void wrapEquelleRuntimeCUDA::divergenceKernel( double* div,
     const int cell = myID();
     if ( cell < number_of_cells ) {
         double div_temp = 0; // total divergence for this cell.
-        int factor, face;
+        int face;
+        double factor;
         // Iterate over this cells faces:
         for ( int i = cell_facepos[cell]; i < cell_facepos[cell+1]; ++i ) {
-            factor = -1; // Assume normal inwards
+            factor = -1.0; // Assume normal inwards
             face = cell_faces[i];
             if ( face_cells[face*2] == cell ) { // if normal outwards
-                factor = 1;
+                factor = 1.0;
             }
             // Add contribution from this cell
             div_temp += flux[face]*factor; 

@@ -17,6 +17,7 @@
 #include "EquelleRuntimeCUDA.hpp"
 #include "equelleTypedefs.hpp"
 #include "wrapEquelleRuntime.hpp"
+#include "CusparseManager.hpp"
 
 #include <thrust/host_vector.h>
 
@@ -255,7 +256,9 @@ CollOfScalar EquelleRuntimeCUDA::newtonSolve(const ResidualFunctor& rescomp,
         if ( solver_.getSolver() == CPU ) {
             du = serialSolveForUpdate(residual);
         }
-        else {
+        else if ( solver_.getSolver() == BiCGStab ){
+            du = CollOfScalar(CusparseManager::biCGStab_ILU_public(residual.derivative(),1000 ,residual.value() ,0.0000001));
+        } else {
             // Solve linear equations for du, apply update.
             du = solver_.solve(residual.derivative(),
                        residual.value(),

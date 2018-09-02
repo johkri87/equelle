@@ -1,5 +1,8 @@
 #include "CusparseManager.hpp"
 #include <time.h>
+#include <thrust/fill.h>
+#include <thrust/execution_policy.h>
+#include <cublas_v2.h>
 
 using namespace equelleCUDA;
 
@@ -255,4 +258,261 @@ CudaMatrix CusparseManager::geam(const CudaMatrix& lhs, const CudaMatrix& rhs, c
     out.checkError_("cusparseDcsrgeam() in CusparseManager::geam()");
 
     return out;
+}
+
+CudaMatrix CusparseManager::precond_ilu(const CudaMatrix& A)
+{
+    CudaMatrix out = A;
+    cusparseSolveAnalysisInfo_t analysisInfo;
+    cusparseCreateSolveAnalysisInfo(&analysisInfo);
+    out.sparseStatus_ = cusparseDcsrsv_analysis(cusparseHandle_, 
+                        out.operation_,
+                        out.rows_, 
+                        out.nnz_, 
+                        out.description_,
+                        out.csrVal_, 
+                        out.csrRowPtr_,
+                        out.csrColInd_, 
+                        analysisInfo);
+    out.checkError_("cusparseDcsrsv_analysis() in CusparseManager::precond_ilu()");
+    cudaDeviceSynchronize();
+    out.sparseStatus_ = cusparseDcsrilu0(cusparseHandle_,
+                 out.operation_, 
+                 out.rows_, 
+                 out.description_, 
+                 out.csrVal_,
+                 out.csrRowPtr_, 
+                 out.csrColInd_,  
+                 analysisInfo);
+    cudaDeviceSynchronize();
+    out.checkError_("cusparseDcsrilu0() in CusparseManager::precond_ilu()");
+    cusparseDestroySolveAnalysisInfo(analysisInfo);
+    return out;
+}
+
+CudaArray CusparseManager::biCGStab_ILU_public(const CudaMatrix& A, const int maxit, const CudaArray& x, const double tol)
+{
+    return instance().biCGStab_ILU(A,maxit,x,tol);
+}
+
+
+CudaArray CusparseManager::biCGStab_ILU(const CudaMatrix& A, const int maxit, const CudaArray& x_in, const double tol)
+{
+    std::cout << 1 << std::endl;
+    CudaMatrix m = A;
+    CudaArray x_out = x_in;
+
+    cusparseSolveAnalysisInfo_t analysisInfo_u;
+    cusparseSolveAnalysisInfo_t analysisInfo_l;
+    cusparseCreateSolveAnalysisInfo(&analysisInfo_u);
+    cusparseCreateSolveAnalysisInfo(&analysisInfo_l);
+    cublasHandle_t cublasHandle;
+    cublasCreate(&cublasHandle);
+    std::cout << 2 << std::endl;
+    double rho, rhop, beta, alpha, negalpha, omega, negomega, temp, temp2;
+    double nrmr, nrmr0;
+    rho = 0.0;
+    double zero = 0.0;
+    double one  = 1.0;
+    double mone = -1.0;
+    int i = 0;
+    int j = 0;
+    int n = A.rows_;
+    int nnz = A.nnz_;
+    std::cout << 3 << std::endl;
+    double* r = 0;
+    double* t = 0;
+    double* s = 0;
+    double* rw = 0;
+    double* p = 0;
+    double* x = x_out.data();
+    double* f = 0;
+    double* pw = 0;
+    double* v = 0;
+
+    std::cout << 4 << std::endl;
+    cudaMalloc(&r, n*sizeof(double));
+    cudaMalloc(&t, n*sizeof(double));
+    cudaMalloc(&s, n*sizeof(double));
+    cudaMalloc(&rw, n*sizeof(double));
+    cudaMalloc(&p, n*sizeof(double));
+    cudaMalloc(&f, n*sizeof(double));
+    cudaMalloc(&v, n*sizeof(double));
+    cudaMalloc(&pw, n*sizeof(double));
+
+
+    thrust::fill(thrust::device, r, r+n, 0.0);
+    thrust::fill(thrust::device, t, t+n, 0.0);
+    thrust::fill(thrust::device, s, s+n, 0.0);
+    thrust::fill(thrust::device, rw, rw+n, 0.0);
+    thrust::fill(thrust::device, p, p+n, 0.0);
+    thrust::fill(thrust::device, f, f+n, 0.0);
+    thrust::fill(thrust::device, v, v+n, 0.0);
+    thrust::fill(thrust::device, pw, pw+n, 0.0);
+    cudaDeviceSynchronize();
+
+    std::cout << 7 << std::endl;
+    cusparseSetMatFillMode(m.description_,CUSPARSE_FILL_MODE_LOWER);
+    cusparseSetMatDiagType(m.description_,CUSPARSE_DIAG_TYPE_UNIT);
+    cusparseDcsrsv_analysis(cusparseHandle_,CUSPARSE_OPERATION_NON_TRANSPOSE,m.rows_,nnz,m.description_,m.csrVal_,m.csrRowPtr_,m.csrColInd_,analysisInfo_l);
+    cudaDeviceSynchronize();
+
+    std::cout << 8 << std::endl;
+    cusparseSetMatFillMode(m.description_,CUSPARSE_FILL_MODE_UPPER);
+    cusparseSetMatDiagType(m.description_,CUSPARSE_DIAG_TYPE_NON_UNIT);
+    cusparseDcsrsv_analysis(cusparseHandle_,CUSPARSE_OPERATION_NON_TRANSPOSE,m.rows_,nnz,m.description_,m.csrVal_,m.csrRowPtr_,m.csrColInd_,analysisInfo_u);
+    cudaDeviceSynchronize();
+    std::cout << 9 << std::endl;
+    m.sparseStatus_ = cusparseDcsrilu0(cusparseHandle_,
+                 m.operation_, 
+                 m.rows_, 
+                 m.description_, 
+                 m.csrVal_,
+                 m.csrRowPtr_, 
+                 m.csrColInd_,  
+                 analysisInfo_l);
+    cudaDeviceSynchronize();
+    std::cout << A << std::endl;
+    std::cout << m << std::endl;
+    m.checkError_("cusparseDcsrilu0() in CusparseManager::precond_ilu()");
+    std::cout << 10 << std::endl;
+    //compute initial residual r0=b-Ax0 (using initial guess in x)
+
+    // Residual r er output. Linjene under er -Ax0
+    cusparseDcsrmv(cusparseHandle_, CUSPARSE_OPERATION_NON_TRANSPOSE, n, n, nnz, &one, A.description_, A.csrVal_, A.csrRowPtr_, A.csrColInd_, x, &zero, r);
+    cublasDscal(cublasHandle, n, &mone, r, 1);
+    cublasDaxpy(cublasHandle, n, &one, f, 1, r, 1);
+    std::cout << 11 << std::endl;
+    //copy residual r into r^{\hat} and p
+    cublasDcopy(cublasHandle, n, r, 1, rw, 1);
+    cublasDcopy(cublasHandle, n, r, 1, p, 1); 
+    cublasDnrm2(cublasHandle, n, r, 1, &nrmr0);
+    std::cout << 12 << std::endl;
+    for (i=0; i<maxit; ){
+        rhop = rho;
+        cublasDdot(cublasHandle, n, rw, 1, r, 1, &rho);
+
+        if (i > 0){
+            beta= (rho/rhop) * (alpha/omega);
+            negomega = -omega;
+            cublasDaxpy(cublasHandle,n, &negomega, v, 1, p, 1);
+            cublasDscal(cublasHandle,n, &beta, p, 1);
+            cublasDaxpy(cublasHandle,n, &one, r, 1, p, 1);
+        }
+        //preconditioning step (lower and upper triangular solve)
+
+        cusparseSetMatFillMode(m.description_,CUSPARSE_FILL_MODE_LOWER);
+        cusparseSetMatDiagType(m.description_,CUSPARSE_DIAG_TYPE_UNIT);
+        cusparseDcsrsv_solve(cusparseHandle_,CUSPARSE_OPERATION_NON_TRANSPOSE,n,&one,m.description_,m.csrVal_,m.csrRowPtr_,m.csrColInd_,analysisInfo_l,p,t);
+
+        cusparseSetMatFillMode(m.description_,CUSPARSE_FILL_MODE_UPPER);
+        cusparseSetMatDiagType(m.description_,CUSPARSE_DIAG_TYPE_NON_UNIT);
+        cusparseDcsrsv_solve(cusparseHandle_,CUSPARSE_OPERATION_NON_TRANSPOSE,n,&one,m.description_,m.csrVal_,m.csrRowPtr_,m.csrColInd_,analysisInfo_u,t,pw);
+
+
+        //matrix-vector multiplication
+
+        cusparseDcsrmv(cusparseHandle_, CUSPARSE_OPERATION_NON_TRANSPOSE, n, n, nnz, &one, A.description_, A.csrVal_, A.csrRowPtr_, A.csrColInd_, pw, &zero, v);
+
+        cublasDdot(cublasHandle,n, rw, 1, v, 1,&temp);
+        alpha= rho / temp;
+        negalpha = -(alpha);
+        cublasDaxpy(cublasHandle,n, &negalpha, v, 1, r, 1);
+        cublasDaxpy(cublasHandle,n, &alpha,    pw, 1, x, 1);
+        cublasDnrm2(cublasHandle, n, r, 1, &nrmr);
+
+        if (nrmr < tol*nrmr0){
+            j=5;
+            break;
+        }
+
+        //preconditioning step (lower and upper triangular solve)
+        cusparseSetMatFillMode(m.description_,CUSPARSE_FILL_MODE_LOWER);
+        cusparseSetMatDiagType(m.description_,CUSPARSE_DIAG_TYPE_UNIT);
+        cusparseDcsrsv_solve(cusparseHandle_,CUSPARSE_OPERATION_NON_TRANSPOSE,n, &one,m.description_,m.csrVal_,m.csrRowPtr_,m.csrColInd_,analysisInfo_l,r,t);
+
+        cusparseSetMatFillMode(m.description_,CUSPARSE_FILL_MODE_UPPER);
+        cusparseSetMatDiagType(m.description_,CUSPARSE_DIAG_TYPE_NON_UNIT);
+        cusparseDcsrsv_solve(cusparseHandle_,CUSPARSE_OPERATION_NON_TRANSPOSE,n, &one,m.description_,m.csrVal_,m.csrRowPtr_,m.csrColInd_,analysisInfo_u,t,s);
+
+        //matrix-vector multiplication
+
+        cusparseDcsrmv(cusparseHandle_, CUSPARSE_OPERATION_NON_TRANSPOSE, n, n, nnz, &one, A.description_, A.csrVal_, A.csrRowPtr_, A.csrColInd_, s, &zero, t);
+
+        cublasDdot(cublasHandle,n, t, 1, r, 1,&temp);
+        cublasDdot(cublasHandle,n, t, 1, t, 1,&temp2);
+        omega = temp / temp2;
+        negomega = -(omega);
+        cublasDaxpy(cublasHandle,n, &omega, s, 1, x, 1);
+        cublasDaxpy(cublasHandle,n, &negomega, t, 1, r, 1);
+
+        cublasDnrm2(cublasHandle,n, r, 1,&nrmr);
+
+        if (nrmr < tol*nrmr0){
+            i++;
+            j=0;
+            break;
+        }
+        i++;
+    }  
+    cusparseDestroySolveAnalysisInfo(analysisInfo_u);
+    cusparseDestroySolveAnalysisInfo(analysisInfo_l);
+    cudaFree(r);
+    cudaFree(t);
+    cudaFree(s);
+    cudaFree(rw);
+    cudaFree(p);
+    cudaFree(f);
+    cudaFree(v);
+    cudaFree(pw);
+    cublasDestroy(cublasHandle);
+
+    return x_out;
+    /*CudaMatrix out = instance.precondILU(A);
+
+    for (i=0; i<maxit; ){
+        rhop = rho;
+        checkCudaErrors(cublasDdot(cublasHandle, n, rw, 1, r, 1, &rho));
+
+        if (i > 0){
+            beta= (rho/rhop) * (alpha/omega);
+            negomega = -omega;
+            checkCudaErrors(cublasDaxpy(cublasHandle,n, &negomega, v, 1, p, 1));
+            checkCudaErrors(cublasDscal(cublasHandle,n, &beta, p, 1));
+            checkCudaErrors(cublasDaxpy(cublasHandle,n, &one, r, 1, p, 1));
+        }
+
+        checkCudaErrors(cublasDdot(cublasHandle,n, rw, 1, v, 1,&temp));
+        alpha= rho / temp;
+        negalpha = -(alpha);
+        checkCudaErrors(cublasDaxpy(cublasHandle,n, &negalpha, v, 1, r, 1));
+        checkCudaErrors(cublasDaxpy(cublasHandle,n, &alpha,        pw, 1, x, 1));
+        checkCudaErrors(cublasDnrm2(cublasHandle, n, r, 1, &nrmr));
+
+        if (nrmr < tol*nrmr0){
+            j=5;
+            break;
+        }
+
+        cublasDdot(cublasHandle,n, t, 1, r, 1,&temp);
+        cublasDdot(cublasHandle,n, t, 1, t, 1,&temp2);
+        omega= temp / temp2;
+        negomega = -(omega);
+        cublasDaxpy(cublasHandle,n, &omega, s, 1, x, 1);
+        cublasDaxpy(cublasHandle,n, &negomega, t, 1, r, 1);
+
+        cublasDnrm2(cublasHandle,n, r, 1,&nrmr);
+
+        if (nrmr < tol*nrmr0){
+            i++;
+            j=0;
+            break;
+        }
+        i++;
+    }*/
+}
+
+CudaMatrix CusparseManager::precondILU(const CudaMatrix& A)
+{
+    return instance().precond_ilu(A);
 }

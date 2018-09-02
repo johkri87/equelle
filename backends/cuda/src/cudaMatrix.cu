@@ -979,7 +979,7 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs)
         return lhs.diagonalMultiply(rhs);
     }
 
-    return CusparseManager::matrixMultiply(lhs, rhs);
+    return CusparseManager::matrixMultiply2(lhs, rhs);
     // Create an empty matrix. Need to set rows, cols, nnz, and allocate arrays!
     /*CudaMatrix out;
     // Legal matrix sizes depend on whether the matrices are transposed or not!

@@ -16,6 +16,8 @@ public:
     static CudaMatrix matrixMultiply2(const CudaMatrix& A, const CudaMatrix& B);
     static CudaMatrix matrixAddition(const CudaMatrix& lhs, const CudaMatrix& rhs);
     static CudaMatrix matrixSubtraction(const CudaMatrix& lhs, const CudaMatrix& rhs);
+    static CudaMatrix precondILU(const CudaMatrix& A);
+    static CudaArray biCGStab_ILU_public(const CudaMatrix& A, const int maxit, const CudaArray& x, const double tol);
 private:
     CusparseManager();
     ~CusparseManager();
@@ -23,6 +25,8 @@ private:
     CudaMatrix gemm2(const CudaMatrix& A, const CudaMatrix& B, const CudaMatrix& C, const double* alpha, const double* beta);
     CudaMatrix gemm(const CudaMatrix& lhs, const CudaMatrix& rhs);
     CudaMatrix geam(const CudaMatrix& lhs, const CudaMatrix& rhs, const double* alpha, const double* beta);
+    CudaMatrix precond_ilu(const CudaMatrix& A);
+    CudaArray biCGStab_ILU(const CudaMatrix& A, const int maxit, const CudaArray& x_in, const double tol);
     static CusparseManager& instance();
 
     // cuSPARSE  and CUDA variables

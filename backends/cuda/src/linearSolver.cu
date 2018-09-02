@@ -8,6 +8,7 @@
 #include "CudaArray.hpp"
 #include "CollOfScalar.hpp"
 #include "equelleTypedefs.hpp"
+#include "CusparseManager.hpp"
 
 #include <cusp/array1d.h>
 #include <cusp/csr_matrix.h>
@@ -55,9 +56,9 @@ LinearSolver::LinearSolver(std::string solver,
     else if ( precond == "none" ) {
         precond_ = NONE;
     }
-    //else if ( precond == "Ainv" ) {
-    //    precond_ = Ainv;
-    //}
+    else if ( precond == "Ainv" ) {
+        precond_ = Ainv;
+    }
     else {
         printLegalInput();
         OPM_THROW(std::runtime_error, "Illegal input " << precond << " for preconditioner.");
@@ -131,6 +132,11 @@ CollOfScalar LinearSolver::solve(const CudaMatrix& A_cpy,
     double_ptr ptr_b(b.data());
     double_ptr ptr_x(x.data());
 
+    /*if ( solver_ == BiCGStab && precond_ == NONE ) {
+        std::cout << "preconding" << std::endl;
+        A = CusparseManager::precondILU(A);
+    }*/
+
     double_ptr ptr_A_csrVal(A.csrVal());
     int_ptr ptr_A_csrRowPtr(A.csrRowPtr());
     int_ptr ptr_A_csrColInd(A.csrColInd());
@@ -158,15 +164,16 @@ CollOfScalar LinearSolver::solve(const CudaMatrix& A_cpy,
         cusp::krylov::cg(cusp_A, cusp_x, cusp_b, monitor, M);
     }
     else if ( solver_ == BiCGStab && precond_ == NONE ) {
+        //CusparseManager::biCGStab_ILU_public(A,maxit_, x, tol_);
         cusp::krylov::bicgstab(cusp_A, cusp_x, cusp_b, monitor);
     }
-    //else if ( solver_ == BiCGStab && precond_ == Ainv ) {
-    // // Including this option results in a significant slower grid assembly. 
-    // // I have no idea why this is so, as the grid construction should be 
-    // // unrelated to these lines.
-    //  cusp::precond::scaled_bridson_ainv<double, cusp::device_memory> M(cusp_A, 0, -1, true, 2);
-    //  cusp::krylov::bicgstab(cusp_A, cusp_x, cusp_b, monitor, M);
-    //}
+    else if ( solver_ == BiCGStab && precond_ == Ainv ) {
+     // Including this option results in a significant slower grid assembly. 
+     // I have no idea why this is so, as the grid construction should be 
+     // unrelated to these lines.
+      cusp::precond::scaled_bridson_ainv<double, cusp::device_memory> M(cusp_A, 0, -1, true, 2);
+      cusp::krylov::bicgstab(cusp_A, cusp_x, cusp_b, monitor, M);
+    }
     else if ( solver_ == CG && precond_ == NONE ) {
         cusp::krylov::cg(cusp_A, cusp_x, cusp_b, monitor);
     }

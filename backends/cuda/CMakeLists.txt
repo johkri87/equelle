@@ -54,7 +54,7 @@ cuda_compile ( equelle_cuda_cu ${cuda_cuda_src} ${cuda_cuda_inc} ${cuda_cuda_cuh
 add_library( equelle_cuda ${equelle_cuda_cu} ${cuda_src} ${cuda_inc} )
 
 # Link with the cuda libraries
-target_link_libraries ( equelle_cuda ${CUDA_LIBRARIES} ${CUDA_cusparse_LIBRARY} )
+target_link_libraries ( equelle_cuda ${CUDA_LIBRARIES} ${CUDA_cusparse_LIBRARY} ${CUDA_cublas_LIBRARY} )
 
 set(optirun_command "")
 option(EQUELLE_CUDA_OPTIRUN "Run CUDA tests with optirun from Bumblebee" OFF)
