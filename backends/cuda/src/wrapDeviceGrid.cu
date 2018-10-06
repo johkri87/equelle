@@ -8,7 +8,6 @@
 #include <thrust/device_vector.h>
 #include <thrust/detail/raw_pointer_cast.h>
 
-#include "DeviceGrid.hpp"
 #include "wrapDeviceGrid.hpp"
 #include "CollOfScalar.hpp"
 #include "CollOfIndices.hpp"

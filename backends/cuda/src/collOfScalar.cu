@@ -8,6 +8,7 @@
 #include "CollOfScalar.hpp"
 #include "CudaArray.hpp"
 #include "CudaMatrix.hpp"
+#include "EquelleCUDATools.h"
 
 #include <thrust/detail/raw_pointer_cast.h>
 #include <thrust/reduce.h>
@@ -230,6 +231,7 @@ CollOfScalar equelleCUDA::operator-(const CollOfScalar& lhs, const CollOfScalar&
 
 
 CollOfScalar equelleCUDA::operator*(const CollOfScalar& lhs, const CollOfScalar& rhs) {
+
     CudaArray val = lhs.val_ * rhs.val_;
     if ( lhs.autodiff_ || rhs.autodiff_ ) {
 	// (u*v)' = u'*v + v'*u = diag(v)*u' + diag(u)*v'

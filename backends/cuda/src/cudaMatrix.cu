@@ -18,6 +18,7 @@
 #include "CollOfScalar.hpp" // for constructor for diagonal matrix.
 #include "equelleTypedefs.hpp"
 #include "device_functions.cuh"
+#include "EquelleCUDATools.h"
 
 using namespace equelleCUDA;
 using namespace wrapCudaMatrix;
@@ -385,6 +386,7 @@ CudaMatrix& CudaMatrix::operator= (const CudaMatrix& other) {
 
 // Destructor
 CudaMatrix::~CudaMatrix() {
+  //PUSH_RANGE("~CudaMatrix", 4);
     // Free pointers if not zero.
     if ( csrVal_ != 0 ) {
 	cudaStatus_ = cudaFree(csrVal_);
@@ -402,7 +404,7 @@ CudaMatrix::~CudaMatrix() {
     // Destroy description_ 
     sparseStatus_ = cusparseDestroyMatDescr( description_ );
     checkError_("cusparseDestroyMatDescr() in CudaMatrix::~CudaMatrix()");
-
+    //POP_RANGE
 }
 
 
@@ -569,8 +571,49 @@ bool CudaMatrix::isTranspose() const {
     return ( operation_ == CUSPARSE_OPERATION_TRANSPOSE );
 }
 
+int countActualNonZeros(CudaMatrix mat)
+{
+    hostMat hmat = mat.toHost();
+    int count = hmat.nnz;
+    assert(hmat.vals.size() == hmat.nnz);
+    for( int i = 0; i < hmat.nnz; i++ ) {
+        if(fabs(hmat.vals[i]) == 0.0) {
+            --count;
+        }
+    }
+    return count;
+}
+
 
 // --------------------- OVERLOADING OF OPERATORS -------------------------- //
+
+std::ostream& equelleCUDA::operator<<(std::ostream& output, const CudaMatrix& mat)
+{
+    //hostMat hmat = mat.toHost();
+    output << "Info about CudaMatrix "
+           << "\nRows: " << mat.rows()
+           << "\nColumns: " << mat.cols()
+           << "\nNNZ: " << mat.nnz()
+           << "\nEmpty: " << (mat.isEmpty() ? "Yes" : "No")
+           << "\nRowPtr: " << mat.csrRowPtr()
+           << "\nCsrColInd: " << mat.csrColInd()
+           << "\nCsrVal: " << mat.csrVal();
+          //<< "\nFirst CsrVal: " << hmat.vals[0];
+
+    if(mat.isEmpty()){
+        return output;
+    }
+    // After some operations, explicit zeroes are stored,
+    // so we check the actual count.
+    hostMat hmat = mat.toHost();
+
+    output  << "\nActual NNZ: " << countActualNonZeros(mat)
+            << "\nMin value: "  << *std::min_element(hmat.vals.begin(),hmat.vals.end())
+            << "\nMax value: "  << *std::max_element(hmat.vals.begin(),hmat.vals.end())
+            << "\nTransposed: " << (mat.isTranspose() ? "Yes" : "No"); 
+    return output;
+}
+
 
 // Operator +
 CudaMatrix equelleCUDA::operator+(const CudaMatrix& lhs, const CudaMatrix& rhs) {
@@ -695,7 +738,6 @@ CudaMatrix equelleCUDA::cudaMatrixSum(const CudaMatrix& lhs,
 
 
 CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs) {
-
     //std::cout << "-------MATRIX * MATRIX " << lhs.isTranspose() << " " << rhs.isTranspose() << "---------\n";
     // If any of them are empty, we return an empty matrix.
     // An empty matrix is interpreted as a correctly sized matrix of zeros.
@@ -710,7 +752,7 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs) 
     if ( lhs.diagonal_ ) {
 	return lhs.diagonalMultiply(rhs);
     }
-    
+
     // Create an empty matrix. Need to set rows, cols, nnz, and allocate arrays!
     CudaMatrix out;
     // Legal matrix sizes depend on whether the matrices are transposed or not!
@@ -731,6 +773,11 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs) 
     int *nnzTotalDevHostPtr = &out.nnz_;
     out.sparseStatus_ = cusparseSetPointerMode(CUSPARSE, CUSPARSE_POINTER_MODE_HOST);
     out.checkError_("cusparseSetPointerMode() in CudaMatrix operator *");
+    if(!lhs.isTranspose()){
+        PUSH_RANGE("gemmNnz", 5);
+    } else {
+        PUSH_RANGE("gemmNnzTranspose", 5);
+    }
     out.sparseStatus_ = cusparseXcsrgemmNnz( CUSPARSE, 
 					     lhs.operation_, rhs.operation_,
 					     out.rows_, out.cols_, innerSize,
@@ -741,6 +788,7 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs) 
 					     out.description_,
 					     out.csrRowPtr_, nnzTotalDevHostPtr);
     out.checkError_("cusparseXcsrgemmNnz() in CudaMatrix operator *");
+    POP_RANGE
     if ( nnzTotalDevHostPtr != NULL ) {
 	out.nnz_ = *nnzTotalDevHostPtr;
     } else {
@@ -759,7 +807,12 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs) 
     out.checkError_("cudaMalloc(out.csrVal_) in CudaMatrix operator *");
     out.cudaStatus_ = cudaMalloc( (void**)&out.csrColInd_, out.nnz_*sizeof(int));
     out.checkError_("cudaMalloc(out.csrColInd_) in CudaMatrix operator *");
-    
+
+    if(!lhs.isTranspose()){
+        PUSH_RANGE("gemm", 6);
+    } else {
+        PUSH_RANGE("gemmTranspose", 6);
+    }
     // 2) Multiply the matrices:
     out.sparseStatus_ = cusparseDcsrgemm(CUSPARSE,
 					 lhs.operation_, rhs.operation_,
@@ -772,6 +825,7 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs) 
 					 out.csrVal_, out.csrRowPtr_, out.csrColInd_);
     out.checkError_("cusparseDcsrgemm() in CudaMatrix operator *");
     
+    POP_RANGE;
     return out;
 } // operator *
 

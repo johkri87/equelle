@@ -62,6 +62,7 @@ void DeviceHelperOps::initGrad_() {
 	initHost_();
     }
     grad_ = CudaMatrix(host_grad_);
+    //std::cout << grad_ << std::endl;
 }
 
 void DeviceHelperOps::initDiv_() {
@@ -76,6 +77,7 @@ void DeviceHelperOps::initFulldiv_() {
 	initHost_();
     }
     fulldiv_ = CudaMatrix(host_fulldiv_);
+    //std::cout << fulldiv_ << std::endl;
 }
 
 

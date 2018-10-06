@@ -82,6 +82,7 @@ if (Boost_FOUND)
 			equelle_cuda
 			equelle_rt
 			opmsimulators opmgrid opmcommon
+			/usr/local/cuda-8.0/lib64/libnvToolsExt.so
 			boost_filesystem boost_system boost_regex
 			tinyxml ecl umfpack ${SUPERLU_LIB} dunecommon
 		)

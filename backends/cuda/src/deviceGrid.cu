@@ -107,21 +107,21 @@ DeviceGrid::DeviceGrid( const UnstructuredGrid& grid)
 			      dimensions_ * number_of_faces_ * sizeof(double));
     checkError_("cudaMalloc(face_centroids_) in DeviceGrid::DeviceGrid(UnstructuredGrid&)");
     cudaStatus_ = cudaMemcpy( face_centroids_, grid.face_centroids,
-			      dimensions_ * number_of_faces_ * sizeof(double),
-			      cudaMemcpyHostToDevice );
+                  dimensions_ * number_of_faces_ * sizeof(double),
+                  cudaMemcpyHostToDevice );
     checkError_("cudaMemcpy(face_centroids_) in DeviceGrid::DeviceGrid(UnstructuredGrid&)");
 
     // Allocate memory for cell_facepos_:
     // type: int
     // size: number_of_cells_ + 1
     cudaStatus_ = cudaMalloc( (void**)&cell_facepos_, 
-			      (number_of_cells_ + 1) * sizeof(int));
+                  (number_of_cells_ + 1) * sizeof(int));
     checkError_("cudaMalloc(cell_facepos_) in DeviceGrid::DeviceGrid(UnstructuredGrid&)");
     cudaStatus_ = cudaMemcpy( cell_facepos_, grid.cell_facepos,
-			      (number_of_cells_ + 1) * sizeof(int),
-			      cudaMemcpyHostToDevice );
+                  (number_of_cells_ + 1) * sizeof(int),
+                  cudaMemcpyHostToDevice );
     checkError_("cudaMemcpy(cell_facepos_) in DeviceGrid::DeviceGrid(UnstructuredGrid&)");
-    
+
     // Allocate memory for cell_faces:
     // type: int
     // size: cell_facepos_[ number_of_cells_ ]
@@ -155,28 +155,41 @@ DeviceGrid::DeviceGrid( const UnstructuredGrid& grid)
 			      cudaMemcpyHostToDevice );
     checkError_("cudaMemcpy(face_areas_) in DeviceGrid::DeviceGrid(UnstructuredGrid&)");
  
+
+
     // Allocate memory for face_cells_:
     // type: int
     // size: 2 * number_of_faces_
     cudaStatus_ = cudaMalloc( (void**)&face_cells_, 
-			      2 * number_of_faces_ * sizeof(int));
+                  2 * number_of_faces_ * sizeof(int));
     checkError_("cudaMalloc(face_cells_) in DeviceGrid::DeviceGrid(UnstructuredGrid&)");
     cudaStatus_ = cudaMemcpy( face_cells_, grid.face_cells,
-			      2 * number_of_faces_ * sizeof(int),
-			      cudaMemcpyHostToDevice );
+                  2 * number_of_faces_ * sizeof(int),
+                  cudaMemcpyHostToDevice );
     checkError_("cudaMemcpy(face_cells_) in DeviceGrid::DeviceGrid(UnstructuredGrid&)");
 
     // Allocate memory for face_normals_:
     // type: double
     // size: dimensions_ * number_of_faces_
     cudaStatus_ = cudaMalloc( (void**)&face_normals_, 
-			      dimensions_ * number_of_faces_ * sizeof(double));
+                  dimensions_ * number_of_faces_ * sizeof(double));
     checkError_("cudaMalloc(face_normals_) in DeviceGrid::DeviceGrid(UnstructuredGrid&)");
     cudaStatus_ = cudaMemcpy( face_normals_, grid.face_normals,
-			      dimensions_ * number_of_faces_ * sizeof(double),
-			      cudaMemcpyHostToDevice );
+                  dimensions_ * number_of_faces_ * sizeof(double),
+                  cudaMemcpyHostToDevice );
     checkError_("cudaMemcpy(face_normals_) in DeviceGrid::DeviceGrid(UnstructuredGrid&)");
 
+    int MiB = 1048576;
+
+    std::cout << "cell_centroids_: " << (double)dimensions_ * number_of_cells_ * sizeof(double)/MiB << std::endl;
+    std::cout << "face_centroids_: " << (double)dimensions_ * number_of_faces_ * sizeof(double)/MiB << std::endl;
+    std::cout << "cell_facepos_: " << (double)(number_of_cells_ + 1) * sizeof(int)/MiB << std::endl;
+    std::cout << "cell_faces_: " << (double)size_cell_faces_ * sizeof(int)/MiB << std::endl;
+    std::cout << "size_cell_faces_: " << size_cell_faces_ << std::endl;
+    std::cout << "cell_volumes_: " << (double)number_of_cells_ * sizeof(double)/MiB << std::endl;
+    std::cout << "face_areas_: " << (double)number_of_faces_ * sizeof(double)/MiB << std::endl;
+    std::cout << "face_cells_: " << (double)2 * number_of_faces_ * sizeof(int)/MiB << std::endl;
+    std::cout << "face_normals_: " << (double)dimensions_ * number_of_faces_ * sizeof(double)/MiB << std::endl;
 } // Constructor from OPMs UnstructuredGrid
 
 
@@ -421,6 +434,8 @@ void DeviceGrid::createInteriorFaces_() const {
     // new_end points now to where the legal values end,
     // but the vector still has size equal to number_of_faces_    
     interior_faces_ = CollOfFace(i_faces.begin(), new_end);
+
+    std::cout << "interior_faces_: " << (double)interior_faces_.size()*4/1000000 << std::endl;
     interiorFacesEmpty_ = false;
 }
 
@@ -456,6 +471,7 @@ void DeviceGrid::createBoundaryCells_() const {
 								     b_cells.end(),
 								     unchanged(number_of_cells_));
     boundary_cells_ = CollOfCell(b_cells.begin(), new_end);
+    std::cout << "boundary_cells_: " << (double)boundary_cells_.size()*4/1000000 << std::endl;
     boundaryCellsEmpty_ = false;
 }
 
@@ -479,6 +495,7 @@ void DeviceGrid::createInteriorCells_() const {
 								     i_cells.end(),
 								     unchanged(number_of_cells_));
     interior_cells_ = CollOfCell(i_cells.begin(), new_end);
+    std::cout << "interior_cells_: " << (double)interior_cells_.size()*4/1000000 << std::endl;
     interiorCellsEmpty_ = false;
 }
 

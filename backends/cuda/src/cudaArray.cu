@@ -21,6 +21,7 @@
 #include "DeviceGrid.hpp"
 #include "CollOfIndices.hpp"
 #include "device_functions.cuh"
+#include "EquelleCUDATools.h"
 
 
 // Implementation of the class CudaArray
@@ -150,10 +151,12 @@ CudaArray& CudaArray::operator= (const CudaArray& other) {
 
 // Destructor:
 CudaArray::~CudaArray() {
+    //PUSH_RANGE("~CudaArray", 5);
     if (dev_values_ != 0) {
 	cudaStatus_ = cudaFree(dev_values_);
 	checkError_("cudaFree in CudaArray::~CudaArray");
     }
+    //POP_RANGE;
 }
 
 
