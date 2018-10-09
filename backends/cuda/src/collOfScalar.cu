@@ -259,8 +259,8 @@ CollOfScalar equelleCUDA::operator/(const CollOfScalar& lhs, const CollOfScalar&
 CollOfScalar equelleCUDA::operator*(const Scalar lhs, const CollOfScalar& rhs) {
     CudaArray val = lhs * rhs.val_;
     if ( rhs.autodiff_ ) {
-	CudaMatrix der = lhs * rhs.der_;
-	return CollOfScalar(val, der);
+        CudaMatrix der = lhs * rhs.der_;
+        return CollOfScalar(val, der);
     }
     return CollOfScalar(val);
 }

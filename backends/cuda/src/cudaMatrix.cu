@@ -416,7 +416,7 @@ CudaMatrix::~CudaMatrix() {
 	cudaStatus_ = cudaFree(csrColInd_);
 	checkError_("cudaFree(csrColInd_) in CudaMatrix::~CudaMatrix");
     }
-
+    std::cout << "~CudaMatrix" << std::endl;
     // Destroy description_ 
     sparseStatus_ = cusparseDestroyMatDescr( description_ );
     checkError_("cusparseDestroyMatDescr() in CudaMatrix::~CudaMatrix()");

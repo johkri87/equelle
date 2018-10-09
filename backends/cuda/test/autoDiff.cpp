@@ -293,51 +293,69 @@ int main(int argc, char** argv) {
     // +
     
     // Autodiff + non-autodiff
+    std::cout << "Before AD + nonAD" << std::endl;
     CollOfScalar myColl2 = myColl + myScal;
+    std::cout << "After AD + nonAD" << std::endl;
     ADB myADB2 = myADB + myScalADB;
     if (compare(myColl2, myADB2, "adb + non-adb") ) { return 1;}
 
     // AD + AD
+    std::cout << "Before AD + AD" << std::endl;
     myColl2 = myColl + myColl2;
+    std::cout << "After AD + AD" << std::endl;
     myADB2 = myADB + myADB2;
     if ( compare( myColl2, myADB2, "adb + adb") ) {return 1;}
 
     // *
     
     // scalar *
+    std::cout << "Before Scalar * AD" << std::endl;
     CollOfScalar myColl3 = 3.4 * myColl2;
+    std::cout << "After Scalar * AD" << std::endl;
     ADB myADB3 = 3.4 * myADB2;
     if ( compare( myColl3, myADB3, "3.4 * adb") ) {return 1; }
     
     //  * scalar
+    std::cout << "Before AD * Scalar" << std::endl;
     myColl3 = myColl3 * 0.5;
+    std::cout << "After AD * Scalar" << std::endl;
     myADB3 = myADB3 * 0.5;
     if ( compare( myColl3, myADB3, "adb * 0.5") ) { return 1;}
     
 
     // - 
     // AD - AD
+    std::cout << "Before AD - AD" << std::endl;
     CollOfScalar myColl4 = myColl2 - myColl3;
+    std::cout << "After AD - AD" << std::endl;
     ADB myADB4 = myADB2 - myADB3;
     if ( compare( myColl4, myADB4, "adb - adb") ) { return 1; }
 
     // AD - AD again
+    std::cout << "Before AD - AD" << std::endl;
     myColl4 = myColl3 - myColl3;
+    std::cout << "After AD - AD" << std::endl;
     myADB4 = myADB3 - myADB3;
     if ( compare( myColl4, myADB4, "adb - adb = zeros") ) {return 1; }
 
     // AD - nonAD
+    std::cout << "Before AD - nonAD" << std::endl;
     myColl4 = myColl3 - myScal;
+    std::cout << "After AD - nonAD" << std::endl;
     myADB4 = myADB3 - myScalADB;
     if ( compare( myColl4, myADB4, "adb - nonADB") ) {return 1; }
     
     // nonAD - AD
+    std::cout << "Before nonAD - AD" << std::endl;
     myColl4 = myScal - myColl3;
+    std::cout << "After AD - nonAD" << std::endl;
     myADB4 = myScalADB - myADB3;
     if ( compare( myColl4, myADB4, "nonADB - adb") ) {return 1; }
 
     // unary minus
+    std::cout << "Before unary minus" << std::endl;
     myColl4 = -myColl3;
+    std::cout << "After unary minus" << std::endl;
     myADB4 = -1.0*myADB3;
     if ( compare( myColl4, myADB4, "unary minus") ) {return 1;}
     
@@ -346,7 +364,9 @@ int main(int argc, char** argv) {
     // /
     
     // / scalar
+    std::cout << "Before AD / Scalar" << std::endl;
     CollOfScalar myColl5 = myColl4 / 0.25;
+    std::cout << "After AD / Scalar" << std::endl;
     ADB myADB5 = myADB4;
     myADB5 = myADB5 * 4.0;
     if ( compare( myColl5, myADB5, "adb / scalar") ) {return 1; }
@@ -395,45 +415,62 @@ int main(int argc, char** argv) {
     myADB5.derivative()[0].toSparse(m5);
     ADB::M diagMatrix(diag_test * m5);
     CudaMatrix cuda_diag_test(myColl2);
+    std::cout << "Before diagmat mul" << std::endl;
     CudaMatrix cuda_diagMatrix = cuda_diag_test * myColl5.derivative();
+    std::cout << "After diagmat mul" << std::endl;
     if ( matrixCompare( cuda_diagMatrix.toHost(), diagMatrix, "diagMatrix * matrix")) {return 1; }
     std::cout << "diagMatrix * matrix passed\n";
 
     // Check AD * AD
+    std::cout << "Before AD * AD" << std::endl;
     CollOfScalar myColl6 = myColl2 * myColl5;
+    std::cout << "After AD * AD" << std::endl;
     ADB myADB6 = myADB2 * myADB5;
     if ( compare( myColl6, myADB6, "AD * AD") ) {return 1; }
 
     // Check nonAD * AD;
+    std::cout << "Before nonAD * AD" << std::endl;
     CollOfScalar myColl7 = myScal * myColl6;
+    std::cout << "After nonAD * AD" << std::endl;
     ADB myADB7 = myScalADB * myADB6;
     if ( compare( myColl7, myADB7, "nonAD * AD") ) {return 1; }
 
     // Check AD * nonAD
+    std::cout << "Before AD * nonAD" << std::endl;
     myColl7 = myColl7 * myScal;
+    std::cout << "After nonAD * AD" << std::endl;
     myADB7 = myADB7 * myScalADB;
     if ( compare( myColl7, myADB7, "AD * nonAD") ) {return 1; }
 
     // Division: /
 
     // Check AD / AD:
+    std::cout << "Before AD / AD" << std::endl;
     CollOfScalar myColl8 = myColl7 / myColl6;
+    std::cout << "After AD / AD" << std::endl;
     ADB myADB8 = myADB7 / myADB6;
     if ( compare( myColl8, myADB8, "AD / AD") ) { return 1; }
     
     // Check AD / nonAD
+    std::cout << "Before AD / nonAD" << std::endl;
     CollOfScalar myColl9 = myColl7 / myScal;
+    std::cout << "After AD / nonAD" << std::endl;
     ADB myADB9 = myADB7 / myScalADB;
     if ( compare( myColl9, myADB9, "AD / nonAD") ) {return 1; }
     
     // Check nonAD / AD
+    std::cout << "Before nonAD / AD" << std::endl;
     myColl9 = myScal / myColl6;
+    std::cout << "After nonAD / AD" << std::endl;
     myADB9 = myScalADB / myADB6;
     if ( compare( myColl9, myADB9, "nonAD / AD") ) { return 1; }
 
     // Check scalar / AD
     // Can't test this as "scalar / ADB" is not implemented...
+    std::cout << "Before Scalar / AD" << std::endl;
     CollOfScalar myColl10 = 1000000 / myColl6;
+    std::cout << "After Scalar / AD" << std::endl;
+
     SerialCollOfScalar serial_myColl6(myADB6);
     SerialCollOfScalar serial_myColl10 = 1000000 / serial_myColl6;
     ADB myADB10 = ADB::function(serial_myColl10.value(), serial_myColl10.derivative());
@@ -441,15 +478,21 @@ int main(int argc, char** argv) {
 
 
     // On 
+    std::cout << "Before On" << std::endl;
     CollOfScalar myOn_cuda = er.operatorOn( myColl10, er.allCells(), er.interiorCells());
+    std::cout << "After On" << std::endl;
+
     SerialCollOfScalar myOn_serial = serialER.operatorOn( serial_myColl10, 
 							  serialER.allCells(),
 							  serialER.interiorCells());
     if ( compareER( myOn_cuda, myOn_serial, "myColl10 On InteriorCells()") ) { return 1; }
     
     // Extend
-    CollOfScalar myExt_cuda = er.operatorExtend( myOn_cuda, er.interiorCells(),
+    std::cout << "Before operatorExtend" << std::endl;
+     CollOfScalar myExt_cuda = er.operatorExtend( myOn_cuda, er.interiorCells(),
 						 er.allCells() );
+    std::cout << "After operatorExtend" << std::endl;
+
     SerialCollOfScalar myExt_serial = serialER.operatorExtend( myOn_serial,
 							       serialER.interiorCells(),
 							       serialER.allCells() );

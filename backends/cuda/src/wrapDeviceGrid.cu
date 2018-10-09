@@ -14,6 +14,7 @@
 #include "CollOfIndices.hpp"
 #include "equelleTypedefs.hpp"
 #include "device_functions.cuh"
+#include "EquelleCUDATools.h"
 
 using namespace equelleCUDA;
 
@@ -26,31 +27,43 @@ CollOfScalar wrapDeviceGrid::extendToFull( const CollOfScalar& in_data,
                        const int full_size)
 {
     // Create a vector of size number_of_faces_:
+    //PUSH_RANGE("extendFull", 4);
     CudaArray val(full_size);
     // Extend values
     thrust::fill(thrust::device, val.data(), val.data()+full_size, 0.0);
     thrust::scatter(thrust::device, in_data.data(), in_data.data()+in_data.size(), from_set.begin(), val.data());
     if (in_data.useAutoDiff() ) {
         // Set up output matrix der
-        CudaMatrix tempMat(in_data.derivative()); // Move the rvalue from derivative() into a temp object
-        CudaMatrix der(full_size, tempMat.cols(), tempMat.nnz());
+        //PUSH_RANGE("tempMat", 0);
+        //CudaMatrix tempMat(in_data.derivative()); // Move the rvalue from derivative() into a temp object
+        //POP_RANGE
+        CudaMatrix der(full_size, in_data.der_.cols(), in_data.der_.nnz());
 
         // Copy csrColInd, csrVal and fill csrRowPtr with zeroes
-        thrust::copy(thrust::device, tempMat.csrColInd(), tempMat.csrColInd()+tempMat.nnz(), der.csrColInd());
-        thrust::copy(thrust::device, tempMat.csrVal(), tempMat.csrVal()+tempMat.nnz(), der.csrVal());
+        PUSH_RANGE("thrust_copy", 1);
+        thrust::copy(thrust::device, in_data.der_.csrColInd(), in_data.der_.csrColInd()+in_data.der_.nnz(), der.csrColInd());
+        thrust::copy(thrust::device, in_data.der_.csrVal(), in_data.der_.csrVal()+in_data.der_.nnz(), der.csrVal());
+        cudaDeviceSynchronize();
+        POP_RANGE
+        PUSH_RANGE("thrust_fill", 2);
         thrust::fill(thrust::device,der.csrRowPtr(),der.csrRowPtr()+der.rows()+1, 0.0);
         cudaDeviceSynchronize();
-
+        POP_RANGE
         // Map values in set being extended to the new domain
-        thrust::scatter(thrust::device, tempMat.csrRowPtr()+1, tempMat.csrRowPtr()+tempMat.rows()+1, from_set.begin(), der.csrRowPtr()+1);
+        PUSH_RANGE("thrust_scatter", 3);
+        thrust::scatter(thrust::device, in_data.der_.csrRowPtr()+1, in_data.der_.csrRowPtr()+in_data.der_.rows()+1, from_set.begin(), der.csrRowPtr()+1);
         cudaDeviceSynchronize();
+        POP_RANGE
 
         // Fill in the gaps of the rowPtr
         // {0, 0, 2, 0, 0, 4, 0, 5} becomes 
         // {0, 0, 2, 2, 2, 4, 4, 5}
+        PUSH_RANGE("thrust_inclusive_scan", 1);
         thrust::maximum<int> binary_op;
         thrust::inclusive_scan(thrust::device, der.csrRowPtr(), der.csrRowPtr()+der.rows()+1, der.csrRowPtr(), binary_op);
+        POP_RANGE
         cudaDeviceSynchronize();
+        //POP_RANGE
         return CollOfScalar(val, der);
     }
     return CollOfScalar(val);
