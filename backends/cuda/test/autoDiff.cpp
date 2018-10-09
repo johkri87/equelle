@@ -36,7 +36,7 @@ int compareScalars( double cuda, double serial, std::string msg, double tol = 0.
 int compare( CollOfScalar coll, ADB adb, std::string msg, double tol, bool noAD) {
 
     if (tol == 0.0) {
-	tol = 10;
+    tol = 10;
     }
     tol = tol*std::numeric_limits<double>::epsilon();
 
@@ -44,46 +44,46 @@ int compare( CollOfScalar coll, ADB adb, std::string msg, double tol, bool noAD)
     ADB::V v = adb.value();
     ADB::M m = adb.derivative()[0];
     if ( coll.size() != v.size() ) {
-	std::cout << "ERROR in " << msg << "\n";
-	std::cout << "coll.size() = " << coll.size() << " while v.size() = ";
-	std::cout << v.size() << "\n";
-	return 1;
+    std::cout << "ERROR in " << msg << "\n";
+    std::cout << "coll.size() = " << coll.size() << " while v.size() = ";
+    std::cout << v.size() << "\n";
+    return 1;
     }
     bool correct = true;
     int errors = 0;
     double diff;
     std::vector<double> vals = coll.copyToHost();
     for ( int i = 0; i < coll.size(); i++) {
-	diff = fabs((vals[i] - v[i])/v[i]);
-	if ( diff > tol ) {
-	    std::cout << "vals[" << i << "] = " << vals[i];
-	    std::cout << " but v[" << i << "] = " << v[i];
-	    //std::cout << " with diff: " << fabs(vals[i] - v[i]) << "\n";
-	    std::cout << " with diff: "<< diff << "\n";
-	    correct = false;
-	    errors++;
-	}
+    diff = fabs((vals[i] - v[i])/v[i]);
+    if ( diff > tol ) {
+        std::cout << "vals[" << i << "] = " << vals[i];
+        std::cout << " but v[" << i << "] = " << v[i];
+        //std::cout << " with diff: " << fabs(vals[i] - v[i]) << "\n";
+        std::cout << " with diff: "<< diff << "\n";
+        correct = false;
+        errors++;
+    }
     }
     if (!correct) {
-	std::cout << "Error in " << msg << "\n";
-	std::cout << "\t" << errors << " scalar values are wrong (see above)\n";
-	std::cout << "\tUsed tol = " << tol << "\n";
-	return 1;
+    std::cout << "Error in " << msg << "\n";
+    std::cout << "\t" << errors << " scalar values are wrong (see above)\n";
+    std::cout << "\tUsed tol = " << tol << "\n";
+    return 1;
     }
     
     // Comparing matrix:
     if ( coll.useAutoDiff() ) {
-	hostMat mat = coll.matrixToHost();
-	if ( matrixCompare( mat, m, msg, tol) ) {
-	    return 1;
-	}
+    hostMat mat = coll.matrixToHost();
+    if ( matrixCompare( mat, m, msg, tol) ) {
+        return 1;
+    }
     } // Use autodiff
     else {
-	if ( noAD == false ) {
-	    std::cout << "Error in " << msg << "\n";
-	    std::cout << "\tuseAutoDiff() gives false\n";
-	    return 1;
-	}
+    if ( noAD == false ) {
+        std::cout << "Error in " << msg << "\n";
+        std::cout << "\tuseAutoDiff() gives false\n";
+        return 1;
+    }
     }
     
     std::cout << "Test " << msg << " correct\n\n";
@@ -94,12 +94,12 @@ int compare( CollOfScalar coll, ADB adb, std::string msg, double tol, bool noAD)
 int matrixCompare( hostMat mat, ADB::M m_colMajor, std::string msg, double tol) {
     
     if (tol == 0.0) {
-	tol = 10;
+    tol = 10;
     }
     if (tol > 1.0e-7) {
-	tol = tol*std::numeric_limits<double>::epsilon();
+    tol = tol*std::numeric_limits<double>::epsilon();
     }
-	
+    
     // ADB::M uses column major format!
     // Cannot compare arrays in column major format with arrays in
     // row major formats!
@@ -107,22 +107,22 @@ int matrixCompare( hostMat mat, ADB::M m_colMajor, std::string msg, double tol) 
     m_colMajor.toSparse(m);
 
     if ( mat.nnz != m.nonZeros() ) {
-	std::cout << "Error in " << msg;
-	std::cout << "Wrong number of nnz: " << mat.nnz;
-	std::cout << " should be " << m.nonZeros() << "\n";
-	return 1;
+    std::cout << "Error in " << msg;
+    std::cout << "Wrong number of nnz: " << mat.nnz;
+    std::cout << " should be " << m.nonZeros() << "\n";
+    return 1;
     }
     if ( mat.rows != m.rows() ) {
-	std::cout << "Error in " << msg;
-	std::cout << "Wrong number of rows: " << mat.rows;
-	std::cout << " should be " << m.rows() << "\n";
-	return 1;
+    std::cout << "Error in " << msg;
+    std::cout << "Wrong number of rows: " << mat.rows;
+    std::cout << " should be " << m.rows() << "\n";
+    return 1;
     }
     if ( mat.cols != m.cols() ) {
-	std::cout << "Error in " << msg;
-	std::cout << "Wrong number of cols: " << mat.cols;
-	std::cout << " should be " << m.cols() << "\n";
-	return 1;
+    std::cout << "Error in " << msg;
+    std::cout << "Wrong number of cols: " << mat.cols;
+    std::cout << " should be " << m.cols() << "\n";
+    return 1;
     }
     
     // Checking values:
@@ -132,54 +132,54 @@ int matrixCompare( hostMat mat, ADB::M m_colMajor, std::string msg, double tol) 
     // Vals:
     double* lf_vals = m.valuePtr();
     for (int i = 0; i < mat.vals.size(); ++i) {
-	double diff = fabs((mat.vals[i] - lf_vals[i])/lf_vals[i]);
-	if ( diff > tol ) {
-	     // 100000*std::numeric_limits<double>::epsilon() ) {
-	    std::cout << "mat.vals[" << i << "] = " << mat.vals[i];
-	    std::cout << " but lf_vals[" << i << "] = " << lf_vals[i];
-	    std::cout << " with diff: "<< diff;
-	    std::cout << "\n";
-	    correct = false;
-	    errors++;
-	}
+    double diff = fabs((mat.vals[i] - lf_vals[i])/lf_vals[i]);
+    if ( diff > tol ) {
+         // 100000*std::numeric_limits<double>::epsilon() ) {
+        std::cout << "mat.vals[" << i << "] = " << mat.vals[i];
+        std::cout << " but lf_vals[" << i << "] = " << lf_vals[i];
+        std::cout << " with diff: "<< diff;
+        std::cout << "\n";
+        correct = false;
+        errors++;
+    }
     }
     if ( !correct ) {
-	std::cout << "Error in matrix in " << msg << "\n";
-	std::cout << "\t" << errors << " values in the val pointer is wrong\n";
-	std::cout << "\tWith tol = " << tol << "\n";
-	return 1;
+    std::cout << "Error in matrix in " << msg << "\n";
+    std::cout << "\t" << errors << " values in the val pointer is wrong\n";
+    std::cout << "\tWith tol = " << tol << "\n";
+    return 1;
     }
     
     // Row ptr
     int* lf_rowPtr = m.outerIndexPtr();
     for (int i = 0; i < mat.rowPtr.size(); ++i) {
-	if ( fabs(mat.rowPtr[i] - lf_rowPtr[i]) > 10*std::numeric_limits<double>::epsilon() ) {
-	    std::cout << "mat.rowPtr[" << i << "] = " << mat.rowPtr[i];
-	    std::cout << " but lf_rowPtr[" << i << "] = " << lf_rowPtr[i] << "\n";
-	    correct = false;
-	    errors++;
-	}
+    if ( fabs(mat.rowPtr[i] - lf_rowPtr[i]) > 10*std::numeric_limits<double>::epsilon() ) {
+        std::cout << "mat.rowPtr[" << i << "] = " << mat.rowPtr[i];
+        std::cout << " but lf_rowPtr[" << i << "] = " << lf_rowPtr[i] << "\n";
+        correct = false;
+        errors++;
+    }
     }
     if (!correct) {
-	std::cout << "Error in matrix in " << msg << "\n";
-	std::cout << "\t" << errors << " indices in the rowPtr pointer is wrong\n";
-	return 1;
+    std::cout << "Error in matrix in " << msg << "\n";
+    std::cout << "\t" << errors << " indices in the rowPtr pointer is wrong\n";
+    return 1;
     }
     
     // Col ind
     int* lf_colInd = m.innerIndexPtr();
     for (int i = 0; i < mat.colInd.size(); ++i) {
-	if ( fabs(mat.colInd[i] - lf_colInd[i]) > 10*std::numeric_limits<double>::epsilon() ) {
-	    std::cout << "mat.colInd[" << i << "] = " << mat.colInd[i];
-	    std::cout << " but lf_colInd[" << i << "] = " << lf_colInd[i] << "\n";
-	    correct = false;
-	    errors++;
-	}
+    if ( fabs(mat.colInd[i] - lf_colInd[i]) > 10*std::numeric_limits<double>::epsilon() ) {
+        std::cout << "mat.colInd[" << i << "] = " << mat.colInd[i];
+        std::cout << " but lf_colInd[" << i << "] = " << lf_colInd[i] << "\n";
+        correct = false;
+        errors++;
+    }
     }
     if (!correct) {
-	std::cout << "Error in matrix in " << msg << "\n";
-	std::cout << "\t" << errors << " indices in the colInd pointer is wrong\n";
-	return 1;
+    std::cout << "Error in matrix in " << msg << "\n";
+    std::cout << "\t" << errors << " indices in the colInd pointer is wrong\n";
+    return 1;
     }
     
     return 0;
@@ -189,7 +189,7 @@ int matrixCompare( hostMat mat, ADB::M m_colMajor, std::string msg, double tol) 
 int compareScalars( double cuda, double serial, std::string msg, double tol) {
  
     if (tol == 0.0) {
-	tol = 10;
+    tol = 10;
     }
     tol = tol*std::numeric_limits<double>::epsilon();
 
@@ -198,10 +198,10 @@ int compareScalars( double cuda, double serial, std::string msg, double tol) {
     std::cout << "Serial : " << serial << "\n";
     double diff = fabs((cuda - serial)/serial);
     if ( diff > tol ) {
-	// 100000*std::numeric_limits<double>::epsilon() ) {
-	std::cout << "Differs by "<< diff << " (relative) with tolerance " << tol;
-	std::cout << "\n";
-	return 1;
+    // 100000*std::numeric_limits<double>::epsilon() ) {
+    std::cout << "Differs by "<< diff << " (relative) with tolerance " << tol;
+    std::cout << "\n";
+    return 1;
     }
     std::cout << "Test " << msg << " correct\n";
     return 0;
@@ -232,8 +232,8 @@ void printNonzeros(SerialCollOfScalar s) {
 int main(int argc, char** argv) {
     
     if ( argc < 2 ) {
-	std::cout << "Need a parameter file\n";
-	return 1;
+    std::cout << "Need a parameter file\n";
+    return 1;
     }
 
     Opm::ParameterGroup param( argc, argv, false);
@@ -251,8 +251,8 @@ int main(int argc, char** argv) {
     ADB::V init_V(numCells);
     std::vector<double> init_vec; 
     for ( int i = 0; i < numCells; ++i) {
-	init_V[i] = i + (i-(313%17))*0.1;
-	//init_vec.push_back(i);
+    init_V[i] = i + (i-(313%17))*0.1;
+    //init_vec.push_back(i);
     }
     std::vector<int> blocksize = { numCells };
     ADB initADB = ADB::variable(0, init_V, blocksize);
@@ -268,9 +268,9 @@ int main(int argc, char** argv) {
     ADB::V const_v(numCells);
     std::vector<double> const_vec;
     for (int i = 0; i < numCells; ++i) {
-	const_v[i] = (i%30)*0.1;
-	const_vec.push_back(const_v[i]);
-	init_vec.push_back(myADB.value()[i]);
+    const_v[i] = (i%30)*0.1;
+    const_vec.push_back(const_v[i]);
+    init_vec.push_back(myADB.value()[i]);
     }
     ADB myScalADB = ADB::constant(const_v, blocksize);
 
@@ -293,51 +293,69 @@ int main(int argc, char** argv) {
     // +
     
     // Autodiff + non-autodiff
+    std::cout << "Before AD + nonAD" << std::endl;
     CollOfScalar myColl2 = myColl + myScal;
+    std::cout << "After AD + nonAD" << std::endl;
     ADB myADB2 = myADB + myScalADB;
     if (compare(myColl2, myADB2, "adb + non-adb") ) { return 1;}
 
     // AD + AD
+    std::cout << "Before AD + AD" << std::endl;
     myColl2 = myColl + myColl2;
+    std::cout << "After AD + AD" << std::endl;
     myADB2 = myADB + myADB2;
     if ( compare( myColl2, myADB2, "adb + adb") ) {return 1;}
 
     // *
     
     // scalar *
+    std::cout << "Before Scalar * AD" << std::endl;
     CollOfScalar myColl3 = 3.4 * myColl2;
+    std::cout << "After Scalar * AD" << std::endl;
     ADB myADB3 = 3.4 * myADB2;
     if ( compare( myColl3, myADB3, "3.4 * adb") ) {return 1; }
     
     //  * scalar
+    std::cout << "Before AD * Scalar" << std::endl;
     myColl3 = myColl3 * 0.5;
+    std::cout << "After AD * Scalar" << std::endl;
     myADB3 = myADB3 * 0.5;
     if ( compare( myColl3, myADB3, "adb * 0.5") ) { return 1;}
     
 
     // - 
     // AD - AD
+    std::cout << "Before AD - AD" << std::endl;
     CollOfScalar myColl4 = myColl2 - myColl3;
+    std::cout << "After AD - AD" << std::endl;
     ADB myADB4 = myADB2 - myADB3;
     if ( compare( myColl4, myADB4, "adb - adb") ) { return 1; }
 
     // AD - AD again
+    std::cout << "Before AD - AD" << std::endl;
     myColl4 = myColl3 - myColl3;
+    std::cout << "After AD - AD" << std::endl;
     myADB4 = myADB3 - myADB3;
     if ( compare( myColl4, myADB4, "adb - adb = zeros") ) {return 1; }
 
     // AD - nonAD
+    std::cout << "Before AD - nonAD" << std::endl;
     myColl4 = myColl3 - myScal;
+    std::cout << "After AD - nonAD" << std::endl;
     myADB4 = myADB3 - myScalADB;
     if ( compare( myColl4, myADB4, "adb - nonADB") ) {return 1; }
     
     // nonAD - AD
+    std::cout << "Before nonAD - AD" << std::endl;
     myColl4 = myScal - myColl3;
+    std::cout << "After AD - nonAD" << std::endl;
     myADB4 = myScalADB - myADB3;
     if ( compare( myColl4, myADB4, "nonADB - adb") ) {return 1; }
 
     // unary minus
+    std::cout << "Before unary minus" << std::endl;
     myColl4 = -myColl3;
+    std::cout << "After unary minus" << std::endl;
     myADB4 = -1.0*myADB3;
     if ( compare( myColl4, myADB4, "unary minus") ) {return 1;}
     
@@ -346,7 +364,9 @@ int main(int argc, char** argv) {
     // /
     
     // / scalar
+    std::cout << "Before AD / Scalar" << std::endl;
     CollOfScalar myColl5 = myColl4 / 0.25;
+    std::cout << "After AD / Scalar" << std::endl;
     ADB myADB5 = myADB4;
     myADB5 = myADB5 * 4.0;
     if ( compare( myColl5, myADB5, "adb / scalar") ) {return 1; }
@@ -395,45 +415,62 @@ int main(int argc, char** argv) {
     myADB5.derivative()[0].toSparse(m5);
     ADB::M diagMatrix(diag_test * m5);
     CudaMatrix cuda_diag_test(myColl2);
+    std::cout << "Before diagmat mul" << std::endl;
     CudaMatrix cuda_diagMatrix = cuda_diag_test * myColl5.derivative();
+    std::cout << "After diagmat mul" << std::endl;
     if ( matrixCompare( cuda_diagMatrix.toHost(), diagMatrix, "diagMatrix * matrix")) {return 1; }
     std::cout << "diagMatrix * matrix passed\n";
 
     // Check AD * AD
+    std::cout << "Before AD * AD" << std::endl;
     CollOfScalar myColl6 = myColl2 * myColl5;
+    std::cout << "After AD * AD" << std::endl;
     ADB myADB6 = myADB2 * myADB5;
     if ( compare( myColl6, myADB6, "AD * AD") ) {return 1; }
 
     // Check nonAD * AD;
+    std::cout << "Before nonAD * AD" << std::endl;
     CollOfScalar myColl7 = myScal * myColl6;
+    std::cout << "After nonAD * AD" << std::endl;
     ADB myADB7 = myScalADB * myADB6;
     if ( compare( myColl7, myADB7, "nonAD * AD") ) {return 1; }
 
     // Check AD * nonAD
+    std::cout << "Before AD * nonAD" << std::endl;
     myColl7 = myColl7 * myScal;
+    std::cout << "After AD * nonAD" << std::endl;
     myADB7 = myADB7 * myScalADB;
     if ( compare( myColl7, myADB7, "AD * nonAD") ) {return 1; }
 
     // Division: /
 
     // Check AD / AD:
+    std::cout << "Before AD / AD" << std::endl;
     CollOfScalar myColl8 = myColl7 / myColl6;
+    std::cout << "After AD / AD" << std::endl;
     ADB myADB8 = myADB7 / myADB6;
     if ( compare( myColl8, myADB8, "AD / AD") ) { return 1; }
     
     // Check AD / nonAD
+    std::cout << "Before AD / nonAD" << std::endl;
     CollOfScalar myColl9 = myColl7 / myScal;
+    std::cout << "After AD / nonAD" << std::endl;
     ADB myADB9 = myADB7 / myScalADB;
     if ( compare( myColl9, myADB9, "AD / nonAD") ) {return 1; }
     
     // Check nonAD / AD
+    std::cout << "Before nonAD / AD" << std::endl;
     myColl9 = myScal / myColl6;
+    std::cout << "After nonAD / AD" << std::endl;
     myADB9 = myScalADB / myADB6;
     if ( compare( myColl9, myADB9, "nonAD / AD") ) { return 1; }
 
     // Check scalar / AD
     // Can't test this as "scalar / ADB" is not implemented...
+    std::cout << "Before Scalar / AD" << std::endl;
     CollOfScalar myColl10 = 1000000 / myColl6;
+    std::cout << "After Scalar / AD" << std::endl;
+
     SerialCollOfScalar serial_myColl6(myADB6);
     SerialCollOfScalar serial_myColl10 = 1000000 / serial_myColl6;
     ADB myADB10 = ADB::function(serial_myColl10.value(), serial_myColl10.derivative());
@@ -441,40 +478,55 @@ int main(int argc, char** argv) {
 
 
     // On 
+    std::cout << "Before On" << std::endl;
     CollOfScalar myOn_cuda = er.operatorOn( myColl10, er.allCells(), er.interiorCells());
+    std::cout << "After On" << std::endl;
+
     SerialCollOfScalar myOn_serial = serialER.operatorOn( serial_myColl10, 
-							  serialER.allCells(),
-							  serialER.interiorCells());
+                              serialER.allCells(),
+                              serialER.interiorCells());
     if ( compareER( myOn_cuda, myOn_serial, "myColl10 On InteriorCells()") ) { return 1; }
     
     // Extend
-    CollOfScalar myExt_cuda = er.operatorExtend( myOn_cuda, er.interiorCells(),
-						 er.allCells() );
+    std::cout << "Before operatorExtend" << std::endl;
+     CollOfScalar myExt_cuda = er.operatorExtend( myOn_cuda, er.interiorCells(),
+                         er.allCells() );
+    std::cout << "After operatorExtend" << std::endl;
+
     SerialCollOfScalar myExt_serial = serialER.operatorExtend( myOn_serial,
-							       serialER.interiorCells(),
-							       serialER.allCells() );
+                                   serialER.interiorCells(),
+                                   serialER.allCells() );
     if ( compareER( myExt_cuda, myExt_serial, "myOn On Extend") ) { return 1; }
 
 
     // GRID OPERATIONS
 
     // Gradient:
+    std::cout << "Before gradient(AD)" << std::endl;
     CollOfScalar myGrad_cuda = er.gradient(myColl3);
+    std::cout << "After gradient(AD)" << std::endl;
     SerialCollOfScalar myGrad_serial = serialER.gradient(SerialCollOfScalar(myADB3));
     if ( compareER( myGrad_cuda, myGrad_serial, "Gradient(myColl3)") ) { return 1; }
     // myColl9 creates difficulties...
 
     // Divergence:
     std::cout << "\nmyGrad_cuda.useAutoDiff() = " << myGrad_cuda.useAutoDiff() << "\n";
+    std::cout << "Before divergence(grad)" << std::endl;
     CollOfScalar myDiv_cuda = er.divergence(myGrad_cuda);
+    std::cout << "After divergence(grad)" << std::endl;
+    std::cout << "Before divergence(grad) 2" << std::endl;
+    CollOfScalar myDiv_cuda2 = er.divergence(myGrad_cuda);
+    std::cout << "After divergence(grad) 2" << std::endl;
     SerialCollOfScalar myDiv_serial = serialER.divergence(myGrad_serial);
     if ( compareER( myDiv_cuda, myDiv_serial, "Divergence(myGrad)") ) { return 1; }
 
     // Full divergence:
     // Put 3.14 on the boundary
     // BUT WE NEED OPERATOR EXTEND FIRST!
-        CollOfScalar cuda_edge = er.operatorExtend(er.operatorExtend(3.14, er.boundaryFaces()), er.boundaryFaces(), er.allFaces()) + (er.operatorExtend(myGrad_cuda, er.interiorFaces(), er.allFaces()));
+    CollOfScalar cuda_edge = er.operatorExtend(er.operatorExtend(3.14, er.boundaryFaces()), er.boundaryFaces(), er.allFaces()) + (er.operatorExtend(myGrad_cuda, er.interiorFaces(), er.allFaces()));
+    std::cout << "Before fulldiv" << std::endl;
     CollOfScalar cuda_fulldiv = er.divergence(cuda_edge);
+    std::cout << "After fulldiv" << std::endl;
    
     SerialCollOfScalar serial_edge = serialER.operatorExtend(serialER.operatorExtend(3.14, serialER.boundaryFaces()), serialER.boundaryFaces(), serialER.allFaces()) + (serialER.operatorExtend(myGrad_serial, serialER.interiorFaces(), serialER.allFaces()));
     SerialCollOfScalar serial_fulldiv = serialER.divergence(serial_edge);
@@ -492,23 +544,32 @@ int main(int argc, char** argv) {
     if ( compareER(cuda_inner_cells_vals, serial_inner_cells_vals, "Inner Cells Vals", 100) ) {return 1; }
     
     // Subset to subset On operator with overlap
+    std::cout << "Before AllCells On BoundaryCells" << std::endl;
     CollOfScalar cuda_bnd_vals = er.operatorOn( cuda_fulldiv, er.allCells(), er.boundaryCells());
+    std::cout << "After AllCells On BoundaryCells" << std::endl;
     SerialCollOfScalar serial_bnd_vals = serialER.operatorOn( serial_fulldiv, serialER.allCells(), serialER.boundaryCells());
+    std::cout << "Before Subset On Subset" << std::endl;
     CollOfScalar cuda_sub2sub = er.operatorOn( cuda_bnd_vals, er.boundaryCells(), cuda_inner_cells);
+    std::cout << "After Subset On Subset" << std::endl;
     SerialCollOfScalar serial_sub2sub = serialER.operatorOn( serial_bnd_vals, serialER.boundaryCells(), serial_inner_cells);
     if ( compareER(cuda_sub2sub, serial_sub2sub, "Subset On subset", 100)) {return 1; }
  
     // SQRT
     CollOfScalar myColl4_squared = myColl4 * myColl4;
+    std::cout << "Before sqrt" << std::endl;
     CollOfScalar myColl11 = er.sqrt(myColl4_squared);
+    std::cout << "After sqrt" << std::endl;
     SerialCollOfScalar serial4_squared(myADB4*myADB4);
     SerialCollOfScalar serial11 = serialER.sqrt(serial4_squared);
     if ( compareER( myColl11, serial11, "Sqrt(myColl4*myColl4)") ) { return 1; }
 
 
     // TRINARY IF
+
     double midValue = er.minReduce(myColl11) + 2.0;
+    std::cout << "Before ternary if" << std::endl;
     CollOfScalar myColl12 = er.trinaryIf( (myColl11 > midValue), myColl11, er.operatorExtend(double(1000), er.allCells()));
+    std::cout << "After ternary if" << std::endl;
     SerialCollOfScalar serial12 = serialER.trinaryIf( (serial11 > midValue), serial11, serialER.operatorExtend(double(1000), serialER.allCells()));
     if ( compareER( myColl12, serial12, "myColl12 = myColl11 > midValue ? myColl11 : 1000 Extend AllCells()")) { return 1; }
     std::cout << "Before trinary if max " << er.maxReduce(myColl11) << " and min " << er.minReduce(myColl11) << "\n";
@@ -517,39 +578,49 @@ int main(int argc, char** argv) {
     // myGrad_cuda, myGrad_serial is On InteriorFaces()
     // Trinary If on interiorFaces
     midValue = (er.minReduce(myGrad_cuda) + er.maxReduce(myGrad_cuda))/2.0;
+    std::cout << "Before ternary if 2" << std::endl;
     CollOfScalar myColl13_intf = er.trinaryIf( (myGrad_cuda > 0.05), myGrad_cuda, er.operatorExtend(double(1000), er.interiorFaces()));
+    std::cout << "After ternary if 2" << std::endl;
     SerialCollOfScalar serial13_intf = serialER.trinaryIf( (myGrad_serial > 0.05), myGrad_serial, serialER.operatorExtend( double(1000), serialER.interiorFaces()));
     if ( compareER( myColl13_intf, serial13_intf, "trinaryIf on InteriorFaces()")) { return 1;}
-	std::cout << "Before trinary if max " << er.maxReduce(myGrad_cuda) << " and min " << er.minReduce(myGrad_cuda) << "\n";
+    std::cout << "Before trinary if max " << er.maxReduce(myGrad_cuda) << " and min " << er.minReduce(myGrad_cuda) << "\n";
     std::cout << "After trinary if max " << er.maxReduce(myColl13_intf) << " and min " << er.minReduce(myColl13_intf) << "\n";
 
 
     //printNonzeros(serial_fulldiv);
     CollOfScalar myTri_cuda = er.trinaryIf( cuda_fulldiv > 0, 
-					    2.4 * cuda_fulldiv,
-					    -1.2 * cuda_fulldiv );
+                        2.4 * cuda_fulldiv,
+                        -1.2 * cuda_fulldiv );
     SerialCollOfScalar myTri_serial = serialER.trinaryIf ( serial_fulldiv > 0,
-							   2.4 * serial_fulldiv,
-							   -1.2 * serial_fulldiv);
+                               2.4 * serial_fulldiv,
+                               -1.2 * serial_fulldiv);
     if ( compareER( myTri_cuda, myTri_serial, "TrinaryIf", 100) ) { return 1; }
 
 
     
 
     // REDUCTIONS
+    std::cout << "Before sum reduce" << std::endl;
     double cuda_sum = er.sumReduce(myTri_cuda);
+    std::cout << "After sum reduce" << std::endl;
     double serial_sum = serialER.sumReduce(myTri_serial);
     if ( compareScalars(cuda_sum, serial_sum, "SumReduce(myTri)") ) { return 1;}
     
+    std::cout << "Before min reduce" << std::endl;
     double cuda_min = er.minReduce(myTri_cuda);
+    std::cout << "After min reduce" << std::endl;
     double serial_min = serialER.minReduce(myTri_serial);
     if ( compareScalars(cuda_min, serial_min, "MinReduce(myTri)") ) { return 1; }
     
+    std::cout << "Before max reduce" << std::endl;
     double cuda_max = er.maxReduce(myTri_cuda);
+    std::cout << "After max reduce" << std::endl;
     double serial_max = serialER.maxReduce(myTri_serial);
     if ( compareScalars( cuda_max, serial_max, "MaxReduce(myTri)") ) { return 1; }
     
+    std::cout << "Before product reduce" << std::endl;
     double cuda_prod = er.prodReduce(0.001*er.operatorOn(myTri_cuda, er.allCells(), er.boundaryCells()));
+    std::cout << "After product reduce" << std::endl;
     double serial_prod = serialER.prodReduce(0.001*serialER.operatorOn(myTri_serial, serialER.allCells(), serialER.boundaryCells()));
     if ( compareScalars( cuda_prod, serial_prod, "ProdReduce(myTri)",100) ) { return 1; }
     
@@ -557,7 +628,7 @@ int main(int argc, char** argv) {
     ADB::V norm_vector = myADB4.value();
     double serial_norm = 0;
     for ( int i = 0; i < norm_vector.size(); i++) {
-	serial_norm += norm_vector[i]*norm_vector[i];
+    serial_norm += norm_vector[i]*norm_vector[i];
     }
     serial_norm = std::sqrt(serial_norm);
     if (compareScalars( cuda_norm, serial_norm, "twoNorm(myColl4)", 13) ) { return 1; }
@@ -575,38 +646,42 @@ int main(int argc, char** argv) {
     // 5) Test output against serial computed functionality outside of lambda.
 
     // 1)
+    std::cout << "Before interiorCells" << std::endl;
     CollOfCell intCell = er.interiorCells();
+    std::cout << "After interiorCells" << std::endl;
     // 2)
     std::function<std::array<CollOfScalar, 3>(const std::array<CollOfScalar, 3>&, const std::array<SerialCollOfScalar, 3>&)> test_function = [&](const std::array<CollOfScalar, 3>& cudaArrayIn, const std::array<SerialCollOfScalar,3>& serialArrayIn) -> std::array<CollOfScalar, 3> {
-	bool ad = !cudaArrayIn[0].useAutoDiff();
-	
-	// 2.1)
-	if (compareER(cudaArrayIn[0], serialArrayIn[0], "cudaArrayIn[0]",0, ad)) {MY_THROW}
-	if (compareER(cudaArrayIn[1], serialArrayIn[1], "cudaArrayIn[1]",0, ad)) {MY_THROW}
-	if (compareER(cudaArrayIn[2], serialArrayIn[2], "cudaArrayIn[2]",0, ad)) {MY_THROW}
+    bool ad = !cudaArrayIn[0].useAutoDiff();
+    
+    // 2.1)
+    if (compareER(cudaArrayIn[0], serialArrayIn[0], "cudaArrayIn[0]",0, ad)) {MY_THROW}
+    if (compareER(cudaArrayIn[1], serialArrayIn[1], "cudaArrayIn[1]",0, ad)) {MY_THROW}
+    if (compareER(cudaArrayIn[2], serialArrayIn[2], "cudaArrayIn[2]",0, ad)) {MY_THROW}
 
-	// 2.2)
-	CollOfScalar input1_intc = er.operatorOn(cudaArrayIn[0], er.allCells(), intCell);
-	SerialCollOfScalar sinput1_intc = serialER.operatorOn(serialArrayIn[0], serialER.allCells(), serialER.interiorCells());
-	if ( compareER(input1_intc, sinput1_intc, "On interiorCells in lambda",0, ad)){MY_THROW}
-	double unchanged_midVal = (er.minReduce(input1_intc) + er.maxReduce(input1_intc))/2;
-	CollOfScalar input2_intc = er.trinaryIf( (input1_intc > unchanged_midVal), input1_intc, er.operatorExtend(double(1000), intCell));
-	SerialCollOfScalar sinput2_intc = serialER.trinaryIf( (sinput1_intc > unchanged_midVal), sinput1_intc, serialER.operatorExtend(double(1000), serialER.interiorCells()));
-	if ( compareER(input2_intc, sinput2_intc, "trinary if in lambda",0, ad)) {MY_THROW}
-	
-	CollOfScalar to_output = er.operatorExtend(input2_intc, er.interiorCells(), er.allCells());
-	SerialCollOfScalar serial_to_output = serialER.operatorExtend(sinput2_intc, serialER.interiorCells(), serialER.allCells());
-	if ( compareER(to_output, serial_to_output, "Extend in lambda function",0, ad)){MY_THROW}
+    // 2.2)
+    CollOfScalar input1_intc = er.operatorOn(cudaArrayIn[0], er.allCells(), intCell);
+    SerialCollOfScalar sinput1_intc = serialER.operatorOn(serialArrayIn[0], serialER.allCells(), serialER.interiorCells());
+    if ( compareER(input1_intc, sinput1_intc, "On interiorCells in lambda",0, ad)){MY_THROW}
+    double unchanged_midVal = (er.minReduce(input1_intc) + er.maxReduce(input1_intc))/2;
+    std::cout << "Before ternary if in lambda" << std::endl;
+    CollOfScalar input2_intc = er.trinaryIf( (input1_intc > unchanged_midVal), input1_intc, er.operatorExtend(double(1000), intCell));
+    std::cout << "After ternary if in lambda" << std::endl;
+    SerialCollOfScalar sinput2_intc = serialER.trinaryIf( (sinput1_intc > unchanged_midVal), sinput1_intc, serialER.operatorExtend(double(1000), serialER.interiorCells()));
+    if ( compareER(input2_intc, sinput2_intc, "trinary if in lambda",0, ad)) {MY_THROW}
+    
+    CollOfScalar to_output = er.operatorExtend(input2_intc, er.interiorCells(), er.allCells());
+    SerialCollOfScalar serial_to_output = serialER.operatorExtend(sinput2_intc, serialER.interiorCells(), serialER.allCells());
+    if ( compareER(to_output, serial_to_output, "Extend in lambda function",0, ad)){MY_THROW}
 
-	std::tuple<CollOfScalar, CollOfScalar, CollOfScalar> tempOut = makeArray(cudaArrayIn[0], to_output, cudaArrayIn[2]);
-	return std::array<CollOfScalar, 3> {{ std::get<0>(tempOut), std::get<1>(tempOut), std::get<2>(tempOut) }};
+    std::tuple<CollOfScalar, CollOfScalar, CollOfScalar> tempOut = makeArray(cudaArrayIn[0], to_output, cudaArrayIn[2]);
+    return std::array<CollOfScalar, 3> {{ std::get<0>(tempOut), std::get<1>(tempOut), std::get<2>(tempOut) }};
     };
     
     // 3)
     std::tuple<CollOfScalar, CollOfScalar, CollOfScalar> cudaArrayTuple = makeArray(myColl11, myColl6, myColl7);
     std::array<CollOfScalar, 3> cudaArray = std::array<CollOfScalar, 3> {{std::get<0>(cudaArrayTuple),
-									  std::get<1>(cudaArrayTuple),
-									  std::get<2>(cudaArrayTuple) }};
+                                      std::get<1>(cudaArrayTuple),
+                                      std::get<2>(cudaArrayTuple) }};
     //if ( CollOfScalar(myColl11.value()).useAutoDiff() ) { MY_THROW}
     std::tuple<SerialCollOfScalar, SerialCollOfScalar, SerialCollOfScalar> serialArrayTuple = equelle::makeArray(serial11, SerialCollOfScalar(myADB6), SerialCollOfScalar(myADB7));
 
@@ -632,11 +707,11 @@ int main(int argc, char** argv) {
     // Call test_function with non-autodiff CollOfScalars
     // 3)
     std::tuple<CollOfScalar, CollOfScalar, CollOfScalar> cudaArraySTuple = makeArray(CollOfScalar(myColl11.value()), 
-										     CollOfScalar(myColl6.value()),
-										     CollOfScalar(myColl7.value()) );
+                                             CollOfScalar(myColl6.value()),
+                                             CollOfScalar(myColl7.value()) );
     std::array<CollOfScalar, 3> cudaArrayS = std::array<CollOfScalar, 3> {{ std::get<0>(cudaArraySTuple),
-									    std::get<1>(cudaArraySTuple),
-									    std::get<2>(cudaArraySTuple) }};
+                                        std::get<1>(cudaArraySTuple),
+                                        std::get<2>(cudaArraySTuple) }};
     if (compareER(cudaArrayS[0], serialArray[0], "cudaArray[0] noAD",0, true)) {MY_THROW}
     if (compareER(cudaArrayS[1], serialArray[1], "cudaArray[1] noAD",0, true)) {MY_THROW}
     if (compareER(cudaArrayS[2], serialArray[2], "cudaArray[2] noAD",0, true)) {MY_THROW}

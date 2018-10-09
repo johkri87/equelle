@@ -388,6 +388,7 @@ CudaMatrix& CudaMatrix::operator= (const CudaMatrix& other) {
 CudaMatrix::~CudaMatrix() {
   //PUSH_RANGE("~CudaMatrix", 4);
     // Free pointers if not zero.
+  std::cout << "~CudaMatrix" << std::endl;
     if ( csrVal_ != 0 ) {
 	cudaStatus_ = cudaFree(csrVal_);
 	checkError_("cudaFree(csrVal_) in CudaMatrix::~CudaMatrix");

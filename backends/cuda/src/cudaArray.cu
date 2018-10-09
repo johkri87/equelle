@@ -151,6 +151,7 @@ CudaArray& CudaArray::operator= (const CudaArray& other) {
 
 // Destructor:
 CudaArray::~CudaArray() {
+    std::cout << "~CudaArray" << std::endl;
     //PUSH_RANGE("~CudaArray", 5);
     if (dev_values_ != 0) {
 	cudaStatus_ = cudaFree(dev_values_);
