@@ -169,7 +169,7 @@ CudaArray& CudaArray::operator= (CudaArray&& other)
 
 // Destructor:
 CudaArray::~CudaArray() {
-    std::cout << "~CudaArray" << std::endl;
+    //std::cout << "~CudaArray" << std::endl;
     if (dev_values_ != 0) {
 	cudaStatus_ = cudaFree(dev_values_);
 	checkError_("cudaFree in CudaArray::~CudaArray");

@@ -125,6 +125,34 @@ CollOfScalar& CollOfScalar::operator=(CollOfScalar&& other)
     return *this;
 }
 
+
+// Move constructor from CudaArray and CudaMatrix.
+// Both val and der are moved.
+CollOfScalar::CollOfScalar(CudaArray&& val, CudaMatrix&& der) noexcept
+    : val_(std::move(val)),
+      der_(std::move(der)),
+      autodiff_(true)
+{
+}
+
+// Move constructor from CudaArray and CudaMatrix
+// Only der is moved. val is copied.
+CollOfScalar::CollOfScalar(const CudaArray& val, CudaMatrix&& der)
+    : val_(val),
+      der_(std::move(der)),
+      autodiff_(true)
+{
+}
+
+// Move constructor from CudaArray and CudaMatrix
+// Only der is moved. val is copied.
+CollOfScalar::CollOfScalar(CudaArray&& val, const CudaMatrix& der)
+    : val_(std::move(val)),
+      der_(der),
+      autodiff_(true)
+{
+}
+
    
 CollOfScalar::~CollOfScalar()
 {
