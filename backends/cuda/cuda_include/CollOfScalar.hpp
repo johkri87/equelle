@@ -91,6 +91,8 @@ namespace equelleCUDA {
 	*/
 	CollOfScalar& operator= (const CollOfScalar& other);
 
+	CollOfScalar(CollOfScalar&& coll);
+	CollOfScalar& operator=(CollOfScalar&& other);
 
 
 	//! Destructor

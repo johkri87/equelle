@@ -102,6 +102,29 @@ CollOfScalar& CollOfScalar::operator= (const CollOfScalar& other)
     }
     return *this;
 }
+
+
+// Move constructor
+CollOfScalar::CollOfScalar(CollOfScalar&& coll)
+    : val_(std::move(coll.val_)),
+      der_(std::move(coll.der_)),
+      autodiff_(coll.autodiff_) 
+{
+    // Intentionally left empty
+}
+
+// Assignment move operator
+CollOfScalar& CollOfScalar::operator=(CollOfScalar&& other)
+{
+    //std::cout << "In CollOfScalar move assignment operator" << std::endl;
+    val_ = std::move(other.val_);
+    autodiff_ = other.autodiff_;
+    if ( autodiff_ ) {
+        der_ = std::move(other.der_);
+    }
+    return *this;
+}
+
    
 CollOfScalar::~CollOfScalar()
 {
