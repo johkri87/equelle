@@ -165,6 +165,9 @@ namespace equelleCUDA {
 	*/
 	CudaMatrix& operator= (const CudaMatrix& other);
 	
+	CudaMatrix(CudaMatrix&& mat);
+	CudaMatrix& operator= (CudaMatrix&& other);
+	void swap(CudaMatrix& other) noexcept;
        
 	//! Destructor
 	/*!

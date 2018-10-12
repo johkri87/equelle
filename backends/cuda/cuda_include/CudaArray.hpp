@@ -77,7 +77,11 @@ namespace equelleCUDA {
 	  \param coll cudaArray to copy from.
 	*/
 	CudaArray(const CudaArray& coll);  
-	
+
+	// Move constructor
+	CudaArray(CudaArray&& coll);
+
+
 
 	//! Copy assignment operator
 	/*!
@@ -91,7 +95,7 @@ namespace equelleCUDA {
 	*/
 	CudaArray& operator= (const CudaArray& other);
 
-
+	CudaArray& operator= (CudaArray&& other);
 
 	//! Destructor
 	/*!

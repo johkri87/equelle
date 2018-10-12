@@ -101,6 +101,15 @@ CudaArray::CudaArray(const CudaArray& coll)
     }    
 }
 
+// Move constructor
+CudaArray::CudaArray(CudaArray&& coll) 
+    : size_(coll.size_),
+      dev_values_(coll.dev_values_),
+      setup_(size_)
+{
+    //std::cout << "CudaArray move constructor" << std::endl;
+    coll.dev_values_ = 0;
+}
 
 // Copy assignment operator
 CudaArray& CudaArray::operator= (const CudaArray& other) {
@@ -148,6 +157,14 @@ CudaArray& CudaArray::operator= (const CudaArray& other) {
 
 } // Assignment copy operator!
 
+// Move assignment operator
+CudaArray& CudaArray::operator= (CudaArray&& other)
+{
+    //std::cout << "In CudaArray move assignment operator." << std::endl;
+    size_ = other.size_;
+    std::swap(dev_values_, other.dev_values_);
+    return *this;
+}
 
 
 // Destructor:
