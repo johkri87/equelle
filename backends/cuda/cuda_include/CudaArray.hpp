@@ -432,6 +432,7 @@ namespace equelleCUDA {
     */
     CudaArray operator/(const CudaArray& lhs, const CudaArray& rhs);
     
+    CudaArray& operator/(CudaArray&& lhs, CudaArray& rhs);
 
     // Multiplication:  Scalar * Collection Of Scalars
     /*!
