@@ -264,7 +264,7 @@ CudaArray equelleCUDA::operator/(const CudaArray& lhs, const CudaArray& rhs) {
     return out;
 }
 
-CudaArray& equelleCUDA::operator/(CudaArray&& lhs, CudaArray& rhs) {
+CudaArray equelleCUDA::operator/(CudaArray&& lhs, CudaArray& rhs) {
 
     kernelSetup s = lhs.setup();
     division_kernel <<<s.grid, s.block>>>(lhs.data(), rhs.data(), lhs.size());

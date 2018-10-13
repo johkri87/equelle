@@ -208,7 +208,7 @@ namespace equelleCUDA {
 	*/
 	friend CollOfScalar operator/(const CollOfScalar& lhs, const CollOfScalar& rhs);
 
-	friend CollOfScalar& operator/(CollOfScalar&& lhs, CollOfScalar&& rhs);
+	friend CollOfScalar operator/(CollOfScalar&& lhs, CollOfScalar&& rhs);
 	
 	
 	// Multiplication:  Scalar * Collection Of Scalars

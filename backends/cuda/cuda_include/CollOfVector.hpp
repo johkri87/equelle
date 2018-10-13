@@ -240,7 +240,7 @@ namespace equelleCUDA {
       Works as a wrapper for the CUDA kernel which subtract collection of scalars.
     */
     CollOfVector operator-(const CollOfVector& lhs, const CollOfVector& rhs);
-    CollOfVector& operator-(CollOfVector&& lhs, CollOfVector&& rhs);
+    CollOfVector operator-(CollOfVector&& lhs, CollOfVector&& rhs);
     /*!
       Overloaded operator unary minus for Collection of Vectors. Elementwise negation
       of all values stored in the collection.

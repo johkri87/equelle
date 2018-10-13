@@ -308,7 +308,7 @@ CollOfScalar equelleCUDA::operator/(const CollOfScalar& lhs, const CollOfScalar&
 }
 
 
-CollOfScalar& equelleCUDA::operator/(CollOfScalar&& lhs, CollOfScalar&& rhs) {
+CollOfScalar equelleCUDA::operator/(CollOfScalar&& lhs, CollOfScalar&& rhs) {
     if ( lhs.autodiff_ || rhs.autodiff_ ) {
     // (u/v)' = (u'*v - v'*u)/(v^2)
     // where u = lhs and v = rhs
