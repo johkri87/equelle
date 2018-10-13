@@ -318,7 +318,7 @@ CollOfScalar equelleCUDA::operator/(CollOfScalar&& lhs, CollOfScalar&& rhs) {
     lhs.der_ = inv_v_squared*( diag_v*lhs.der_ - diag_u*rhs.der_);
     }
     lhs.val_ = std::move(lhs.val_) / std::move(rhs.val_);
-    return lhs;
+    return CollOfScalar(std::move(lhs));
 }
 
 CollOfScalar equelleCUDA::operator*(const Scalar lhs, const CollOfScalar& rhs) {
@@ -348,6 +348,17 @@ CollOfScalar equelleCUDA::operator/(const Scalar lhs, const CollOfScalar& rhs) {
 	return CollOfScalar(std::move(val), std::move(der));
     }
     return CollOfScalar(std::move(val));
+}
+
+CollOfScalar equelleCUDA::operator/(const Scalar lhs, CollOfScalar&& rhs) {
+    if ( rhs.autodiff_ ) {
+        // (a/u)' = - (a/u^2)*u'
+        // where a = lhs and u = rhs
+        CudaMatrix diag_u_squared(lhs/(rhs.val_ * rhs.val_));
+        rhs.der_ = -diag_u_squared*rhs.der_;
+    }
+    rhs.val_ = lhs / std::move(rhs.val_);
+    return CollOfScalar(std::move(rhs));
 }
 
 CollOfScalar equelleCUDA::operator-(const CollOfScalar& arg) {

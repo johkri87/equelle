@@ -246,7 +246,7 @@ namespace equelleCUDA {
 	  \return out[i] = lhs / rhs[i]
 	*/
 	friend CollOfScalar operator/(const Scalar lhs, const CollOfScalar& rhs);
-	
+	friend CollOfScalar operator/(const Scalar lhs, CollOfScalar&& rhs);
 	
 	/*!
 	  Unary minus

@@ -413,7 +413,7 @@ CudaMatrix::CudaMatrix(CudaMatrix&& mat)
       operation_(mat.operation_),
       diagonal_(mat.diagonal_)
 {
-    *this = std::move(mat);
+    swap(mat);
     createGeneralDescription_("CudaMatrix move constructor");
 }
 

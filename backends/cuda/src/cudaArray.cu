@@ -264,7 +264,7 @@ CudaArray equelleCUDA::operator/(const CudaArray& lhs, const CudaArray& rhs) {
     return out;
 }
 
-CudaArray equelleCUDA::operator/(CudaArray&& lhs, CudaArray& rhs) {
+CudaArray equelleCUDA::operator/(CudaArray&& lhs, CudaArray&& rhs) {
 
     kernelSetup s = lhs.setup();
     division_kernel <<<s.grid, s.block>>>(lhs.data(), rhs.data(), lhs.size());
@@ -291,6 +291,12 @@ CudaArray equelleCUDA::operator/(const Scalar lhs, const CudaArray& rhs) {
     kernelSetup s = out.setup();
     scalDivColl_kernel<<<s.grid,s.block>>>(out.data(), lhs, out.size());
     return out;
+}
+
+CudaArray equelleCUDA::operator/(const Scalar lhs, CudaArray&& rhs) {
+    kernelSetup s = rhs.setup();
+    scalDivColl_kernel<<<s.grid,s.block>>>(rhs.data(), lhs, rhs.size());
+    return rhs;
 }
 
 CudaArray equelleCUDA::operator-(const CudaArray& arg) {
