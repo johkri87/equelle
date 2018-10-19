@@ -326,7 +326,8 @@ CollOfScalar equelleCUDA::operator/(CollOfScalar&& lhs, CollOfScalar&& rhs) {
     CudaMatrix inv_v_squared( 1.0/(rhs.val_ * rhs.val_));
     lhs.der_ = inv_v_squared*( diag_v*lhs.der_ - diag_u*rhs.der_);
     }
-    lhs.val_ = std::move(lhs.val_) / std::move(rhs.val_);
+    lhs.val_ /= rhs.val_;
+    std::cout << "Move /" << std::endl;
     return CollOfScalar(std::move(lhs));
 }
 

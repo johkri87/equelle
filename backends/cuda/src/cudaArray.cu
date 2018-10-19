@@ -172,6 +172,11 @@ CudaArray& CudaArray::operator= (CudaArray&& other)
     return *this;
 }
 
+CudaArray& CudaArray::operator/=(const CudaArray& rhs) {
+    kernelSetup s = this->setup();
+    division_kernel <<<s.grid, s.block>>>(dev_values_, rhs.data(), size_);
+    return *this;
+}
 
 // Destructor:
 CudaArray::~CudaArray() {

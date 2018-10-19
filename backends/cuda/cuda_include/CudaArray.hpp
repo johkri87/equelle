@@ -98,7 +98,7 @@ namespace equelleCUDA {
 	CudaArray& operator= (CudaArray&& other);
 
 	CudaArray& operator*=(const Scalar lhs);
-
+	CudaArray& operator/=(const CudaArray& rhs);
 	//! Destructor
 	/*!
 	  Frees device memory as the CudaArray goes out of scope.
