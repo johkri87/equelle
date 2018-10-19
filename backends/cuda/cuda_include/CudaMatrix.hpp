@@ -168,7 +168,7 @@ namespace equelleCUDA {
 	CudaMatrix(CudaMatrix&& mat);
 	CudaMatrix& operator= (CudaMatrix&& other);
 	void swap(CudaMatrix& other) noexcept;
-       
+	CudaMatrix& operator*=(const Scalar lhs);
 	//! Destructor
 	/*!
 	  Free all device memory allocated by the given object.

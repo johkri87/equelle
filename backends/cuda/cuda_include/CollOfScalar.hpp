@@ -106,7 +106,7 @@ namespace equelleCUDA {
 	CollOfScalar(CollOfScalar&& coll);
 	CollOfScalar& operator=(CollOfScalar&& other);
 
-
+	CollOfScalar& operator*=(const Scalar lhs);
 	//! Destructor
 	/*!
 	  Frees device memory as the CollOfScalar goes out of scope.
@@ -220,7 +220,7 @@ namespace equelleCUDA {
 	  \sa scalMultColl_kernel
 	*/
 	friend CollOfScalar operator*(const Scalar lhs, const CollOfScalar& rhs);
-	
+	friend CollOfScalar operator*(const Scalar lhs, CollOfScalar&& rhs);
 	/*! 
 	  Since multiplication is commutative, this implementation simply return
 	  rhs *  lhs

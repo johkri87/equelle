@@ -157,6 +157,12 @@ CudaArray& CudaArray::operator= (const CudaArray& other) {
 
 } // Assignment copy operator!
 
+CudaArray& CudaArray::operator*=(const Scalar lhs) {
+    kernelSetup s = setup();
+    scalMultColl_kernel<<<s.grid,s.block>>>(dev_values_, lhs, size_);
+    return *this;
+}
+
 // Move assignment operator
 CudaArray& CudaArray::operator= (CudaArray&& other)
 {

@@ -144,6 +144,7 @@ CollOfScalar::CollOfScalar(const CudaArray& val, CudaMatrix&& der)
 {
 }
 
+
 // Move constructor from CudaArray and CudaMatrix
 // Only der is moved. val is copied.
 CollOfScalar::CollOfScalar(CudaArray&& val, const CudaMatrix& der)
@@ -160,6 +161,14 @@ CollOfScalar::~CollOfScalar()
 }
 
 
+CollOfScalar& CollOfScalar::operator*=(const Scalar lhs)
+{
+    val_ *= lhs;
+    if ( autodiff_ ) {
+        der_ *= lhs;
+    }
+    return *this;
+}
 
 // Member functions that only have to return val_'s function:
 const double* CollOfScalar::data() const {
@@ -328,6 +337,12 @@ CollOfScalar equelleCUDA::operator*(const Scalar lhs, const CollOfScalar& rhs) {
         return CollOfScalar(std::move(val), std::move(der));
     }
     return CollOfScalar(std::move(val));
+}
+
+CollOfScalar equelleCUDA::operator*(const Scalar lhs, CollOfScalar&& rhs) {
+    std::cout << "*=CollOfScalar" << std::endl;
+    rhs *= lhs;
+    return CollOfScalar(std::move(rhs));
 }
 
 CollOfScalar equelleCUDA::operator*(const CollOfScalar& lhs, const Scalar rhs) {

@@ -417,6 +417,17 @@ CudaMatrix::CudaMatrix(CudaMatrix&& mat)
     createGeneralDescription_("CudaMatrix move constructor");
 }
 
+CudaMatrix& CudaMatrix::operator*=(const Scalar lhs) {
+    if ( csrVal_ == 0 ) {
+        OPM_THROW(std::runtime_error, "Calling CudaMatrix *= Scalar with empty matrix...");
+    }
+    kernelSetup s(nnz_);
+    wrapCudaArray::scalMultColl_kernel<<<s.grid, s.block>>>(csrVal_,
+                  lhs,
+                  nnz_);
+    return *this;
+}
+
 // Move assignment operator:
 CudaMatrix& CudaMatrix::operator= (CudaMatrix&& other)
 {
@@ -890,6 +901,7 @@ CudaMatrix equelleCUDA::operator*(const Scalar lhs, const CudaMatrix& rhs) {
 							    out.nnz_);
     return out;
 }
+
 
 CudaMatrix equelleCUDA::operator-(const CudaMatrix& arg) {
     return -1.0*arg;
