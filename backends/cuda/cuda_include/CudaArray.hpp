@@ -97,7 +97,8 @@ namespace equelleCUDA {
 
 	CudaArray& operator= (CudaArray&& other);
 
-	CudaArray& operator*=(const Scalar lhs);
+	CudaArray& operator*=(const Scalar rhs);
+	CudaArray& operator*=(const CudaArray& rhs);
 	CudaArray& operator/=(const CudaArray& rhs);
 	//! Destructor
 	/*!
