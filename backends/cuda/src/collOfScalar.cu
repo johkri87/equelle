@@ -315,8 +315,6 @@ CollOfScalar& CollOfScalar::operator*=(const CollOfScalar& rhs) {
         CudaMatrix diag_v(rhs.val_);
         der_ = diag_v*der_ + diag_u*rhs.der_;
         autodiff_ = true;
-        std::cout << der_.csrVal() << std::endl;
-
     }
     val_ *= rhs.val_;
     return *this;
