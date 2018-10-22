@@ -157,9 +157,15 @@ CudaArray& CudaArray::operator= (const CudaArray& other) {
 
 } // Assignment copy operator!
 
-CudaArray& CudaArray::operator*=(const Scalar lhs) {
+CudaArray& CudaArray::operator*=(const Scalar rhs) {
     kernelSetup s = setup();
-    scalMultColl_kernel<<<s.grid,s.block>>>(dev_values_, lhs, size_);
+    scalMultColl_kernel<<<s.grid,s.block>>>(dev_values_, rhs, size_);
+    return *this;
+}
+
+CudaArray& CudaArray::operator*=(const CudaArray& rhs) {
+    kernelSetup s = setup();
+    multiplication_kernel<<<s.grid,s.block>>>(dev_values_, rhs.dev_values_, size_);
     return *this;
 }
 
@@ -276,10 +282,9 @@ CudaArray equelleCUDA::operator/(const CudaArray& lhs, const CudaArray& rhs) {
 }
 
 CudaArray equelleCUDA::operator/(CudaArray&& lhs, CudaArray&& rhs) {
-
     kernelSetup s = lhs.setup();
     division_kernel <<<s.grid, s.block>>>(lhs.data(), rhs.data(), lhs.size());
-    return lhs;
+    return CudaArray(std::move(lhs));
 }
 
 CudaArray equelleCUDA::operator*(const Scalar lhs, const CudaArray& rhs) {
@@ -307,7 +312,7 @@ CudaArray equelleCUDA::operator/(const Scalar lhs, const CudaArray& rhs) {
 CudaArray equelleCUDA::operator/(const Scalar lhs, CudaArray&& rhs) {
     kernelSetup s = rhs.setup();
     scalDivColl_kernel<<<s.grid,s.block>>>(rhs.data(), lhs, rhs.size());
-    return rhs;
+    return CudaArray(std::move(rhs));
 }
 
 CudaArray equelleCUDA::operator-(const CudaArray& arg) {

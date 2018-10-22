@@ -107,6 +107,7 @@ namespace equelleCUDA {
 	CollOfScalar& operator=(CollOfScalar&& other);
 
 	CollOfScalar& operator*=(const Scalar lhs);
+	CollOfScalar& operator*=(const CollOfScalar& rhs);
 	//! Destructor
 	/*!
 	  Frees device memory as the CollOfScalar goes out of scope.
@@ -197,7 +198,7 @@ namespace equelleCUDA {
 	  \sa multiplication_kernel.
 	*/
 	friend CollOfScalar operator*(const CollOfScalar& lhs, const CollOfScalar& rhs);
-
+	friend CollOfScalar operator*(CollOfScalar&& lhs, CollOfScalar&& rhs);
 	// Overloading of operator /
 	/*!
 	  Wrapper for the CUDA kernel which performs the operation.
