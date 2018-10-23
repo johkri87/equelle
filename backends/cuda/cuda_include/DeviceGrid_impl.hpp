@@ -20,9 +20,9 @@ namespace equelleCUDA {
 					    const CollOfIndices<codim>& to_set) const 
     {
 	if ( to_set.isFull() ) {
-	    return wrapDeviceGrid::extendToFull(in_data, 
+	    return CollOfScalar(std::move(wrapDeviceGrid::extendToFull(in_data, 
 						from_set.device_vector(),
-						to_set.size());
+						to_set.size())));
 	}
 	else {
 	    // Better safe than sorry:
@@ -34,10 +34,10 @@ namespace equelleCUDA {
 	    } else {
 		OPM_THROW(std::runtime_error, "No CollOfIndices<codim> for codim " << codim);
 	    }
-	    return wrapDeviceGrid::extendToSubset(in_data,
+	    return CollOfScalar(std::move(wrapDeviceGrid::extendToSubset(in_data,
 						  from_set.device_vector(),
 						  to_set.device_vector(),
-						  full_size);
+						  full_size)));
 	}
     
     }
@@ -48,8 +48,8 @@ namespace equelleCUDA {
 					const CollOfIndices<codim>& to_set) 
     {
 	if ( from_set.isFull() ) {
-	    return wrapDeviceGrid::onFromFull(in_data,
-					      to_set.device_vector());
+	    return CollOfScalar(std::move(wrapDeviceGrid::onFromFull(in_data,
+					      to_set.device_vector())));
 	    
 	}
 	else {
@@ -63,10 +63,10 @@ namespace equelleCUDA {
 	    else {
 		OPM_THROW(std::runtime_error, "No CollOfIndices<codim> for codim " << codim);
 	    }
-	    return wrapDeviceGrid::onFromSubset(in_data,
+	    return CollOfScalar(std::move(wrapDeviceGrid::onFromSubset(in_data,
 						from_set.device_vector(),
 						to_set.device_vector(),
-						full_size);
+						full_size)));
 	}
     }
 

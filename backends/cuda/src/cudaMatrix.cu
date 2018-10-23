@@ -645,13 +645,13 @@ CudaMatrix equelleCUDA::operator+(const CudaMatrix& lhs, const CudaMatrix& rhs) 
     // zeros, and therefore just return the other matrix.
     // This is convenient when we implement autodiff by using CudaMatrix.
     if ( lhs.isEmpty() ) {
-	return rhs;
+	return CudaMatrix(std::move(rhs));
     } 
     else if ( rhs.isEmpty() ) {
-	return lhs;
+	return CudaMatrix(std::move(lhs));
     } 
     else {
-	return cudaMatrixSum(lhs, rhs, 1.0);
+	return CudaMatrix(std::move(cudaMatrixSum(lhs, rhs, 1.0)));
     }
 }
 
@@ -666,7 +666,7 @@ CudaMatrix equelleCUDA::operator-(const CudaMatrix& lhs, const CudaMatrix& rhs) 
 	return lhs;
     }
     else {
-	return cudaMatrixSum(lhs, rhs, -1.0);
+	return CudaMatrix(std::move(cudaMatrixSum(lhs, rhs, -1.0)));
     }
 }
 
@@ -755,7 +755,7 @@ CudaMatrix equelleCUDA::cudaMatrixSum(const CudaMatrix& lhs,
 					 out.csrVal_, out.csrRowPtr_, out.csrColInd_);
     out.checkError_("cusparseDcsrgream() in cudaMatrixSum()");
 
-    return out;
+    return CudaMatrix(std::move(out));
 
 } // cudaMatrixSum
 
@@ -775,7 +775,7 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs) 
     // from the left. Since csrGemm is a hotspot, we handle these cases more efficient
     // by this function:
     if ( lhs.diagonal_ ) {
-	return lhs.diagonalMultiply(rhs);
+	return CudaMatrix(std::move(lhs.diagonalMultiply(rhs)));
     }
     
     // Create an empty matrix. Need to set rows, cols, nnz, and allocate arrays!
@@ -839,7 +839,7 @@ CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const CudaMatrix& rhs) 
 					 out.csrVal_, out.csrRowPtr_, out.csrColInd_);
     out.checkError_("cusparseDcsrgemm() in CudaMatrix operator *");
     
-    return out;
+    return CudaMatrix(std::move(out));
 } // operator *
 
 
@@ -878,14 +878,14 @@ CudaArray equelleCUDA::operator*(const CudaMatrix& mat, const CudaArray& vec) {
 					vec.data(), &beta,
 					out.data());
     mat.checkError_("cusparseDcsrmv() in operator*(CudaMatrix, CudaArray)");
-    return out;
+    return CudaArray(std::move(out));
 }
 
 
 
 // Scalar multiplications with matrix:
 CudaMatrix equelleCUDA::operator*(const CudaMatrix& lhs, const Scalar rhs) {
-    return (rhs * lhs);
+    return CudaMatrix(std::move((rhs * lhs)));
 }
 
 CudaMatrix equelleCUDA::operator*(const Scalar lhs, const CudaMatrix& rhs) {
@@ -899,12 +899,12 @@ CudaMatrix equelleCUDA::operator*(const Scalar lhs, const CudaMatrix& rhs) {
     wrapCudaArray::scalMultColl_kernel<<<s.grid, s.block>>>(out.csrVal_,
 							    lhs,
 							    out.nnz_);
-    return out;
+    return CudaMatrix(std::move(out));
 }
 
 
 CudaMatrix equelleCUDA::operator-(const CudaMatrix& arg) {
-    return -1.0*arg;
+    return CudaMatrix(std::move(-1.0*arg));
 }
 
 
@@ -922,8 +922,8 @@ CudaMatrix CudaMatrix::diagonalMultiply(const CudaMatrix& rhs) const {
     wrapCudaMatrix::diagMult_kernel<<<s.grid, s.block>>>(out.csrVal_,
 							 out.csrRowPtr_,
 							 this->csrVal_,
-							 this->rows_);
-    return out;
+               this->rows_);
+    return CudaMatrix(std::move(out));
 }
 
 // KERNELS -------------------------------------------------

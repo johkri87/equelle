@@ -76,7 +76,7 @@ CollOfScalar wrapEquelleRuntimeCUDA::trinaryIfWrapper( const CollOfBool& predica
 					     iftrue.data(),
 					     iffalse.data(),
 					     iftrue.size());
-	return out;
+	return CollOfScalar(std::move(out));
     }
 }
 
@@ -174,7 +174,7 @@ CollOfScalar wrapEquelleRuntimeCUDA::gradientWrapper( const CollOfScalar& cell_s
 					     face_cells,
 					     out.size());
 	
-	return out;
+	return CollOfScalar(std::move(out));
     }
 }
 
@@ -229,7 +229,7 @@ CollOfScalar wrapEquelleRuntimeCUDA::divergenceWrapper( const CollOfScalar& flux
 					   dev_grid.number_of_cells(),
 					   dev_grid.number_of_faces() );
 
-    return out;
+    return CollOfScalar(std::move(out));
 }
 
 

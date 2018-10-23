@@ -365,7 +365,7 @@ CollOfScalar equelleCUDA::operator*(const Scalar lhs, CollOfScalar&& rhs) {
 }
 
 CollOfScalar equelleCUDA::operator*(const CollOfScalar& lhs, const Scalar rhs) {
-    return ( rhs * lhs);
+    return CollOfScalar(std::move(rhs * lhs));
 }
 
 CollOfScalar equelleCUDA::operator/(const CollOfScalar& lhs, const Scalar rhs) {
@@ -396,7 +396,7 @@ CollOfScalar equelleCUDA::operator/(const Scalar lhs, CollOfScalar&& rhs) {
 }
 
 CollOfScalar equelleCUDA::operator-(const CollOfScalar& arg) {
-    return -1.0*arg;
+    return CollOfScalar(std::move(-1.0*arg));
 }
 
 

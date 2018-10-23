@@ -131,7 +131,7 @@ CollOfCell EquelleRuntimeCUDA::secondCell(CollOfFace faces) const
 
 CollOfScalar EquelleRuntimeCUDA::norm(const CollOfVector& vectors) const
 {
-    return vectors.norm();
+    return CollOfScalar(std::move(vectors.norm()));
 }
 
 CollOfVector EquelleRuntimeCUDA::normal(const CollOfFace& faces) const
@@ -257,17 +257,17 @@ CollOfScalar EquelleRuntimeCUDA::gradient( const CollOfScalar& cell_scalarfield 
 	OPM_THROW(std::runtime_error, "Gradient need input defined on AllCells()");
     }
     
-    return gradientWrapper(cell_scalarfield,
+    return CollOfScalar(std::move(gradientWrapper(cell_scalarfield,
     			   dev_grid_.interiorFaces(),
     			   dev_grid_.face_cells(),
-    			   devOps_);
+    			   devOps_)));
 }
 
 CollOfScalar EquelleRuntimeCUDA::gradient_matrix( const CollOfScalar& cell_scalarfield ) const {
     if ( cell_scalarfield.size() != dev_grid_.number_of_cells() ) {
 	OPM_THROW(std::runtime_error, "Gradient need input defined on AllCells()");
     }
-    return devOps_.grad() * cell_scalarfield;
+    return CollOfScalar(std::move(devOps_.grad() * cell_scalarfield));
 }
 
 CollOfScalar EquelleRuntimeCUDA::divergence(const CollOfScalar& face_fluxes) const {
@@ -278,15 +278,15 @@ CollOfScalar EquelleRuntimeCUDA::divergence(const CollOfScalar& face_fluxes) con
 	CollOfFace int_faces = interiorFaces();
 	// Extend to AllFaces():
 	CollOfScalar allFluxes = operatorExtend(face_fluxes, int_faces, allFaces());
-	return divergenceWrapper(allFluxes,
+	return CollOfScalar(std::move(divergenceWrapper(allFluxes,
 				 dev_grid_,
-				 devOps_);
+				 devOps_)));
     }
     else {
 	// We are on allFaces already, so let's go!
-	return divergenceWrapper(face_fluxes,
+	return CollOfScalar(std::move(divergenceWrapper(face_fluxes,
 				 dev_grid_,
-				 devOps_); 
+				 devOps_))); 
     }
 }
 
@@ -300,10 +300,10 @@ CollOfScalar EquelleRuntimeCUDA::divergence_matrix(const CollOfScalar& face_flux
     
     if ( face_fluxes.size() == dev_grid_.number_of_faces() ) {
 	// All faces
-	return devOps_.fulldiv() * face_fluxes;
+	return CollOfScalar(std::move(devOps_.fulldiv() * face_fluxes));
     }
     else { // on internal faces
-	return devOps_.div() * face_fluxes;
+	return CollOfScalar(std::move(devOps_.div() * face_fluxes));
     }
 }
 
