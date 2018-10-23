@@ -303,8 +303,8 @@ CollOfScalar equelleCUDA::operator*(const CollOfScalar& lhs, const CollOfScalar&
 }
 
 CollOfScalar equelleCUDA::operator*(CollOfScalar&& lhs, CollOfScalar&& rhs) {
-    lhs *= rhs;
-    return CollOfScalar(std::move(lhs));
+    rhs *= lhs;
+    return CollOfScalar(std::move(rhs));
 }
 
 CollOfScalar& CollOfScalar::operator*=(const CollOfScalar& rhs) {
