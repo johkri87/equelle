@@ -655,6 +655,23 @@ CudaMatrix equelleCUDA::operator+(const CudaMatrix& lhs, const CudaMatrix& rhs) 
     }
 }
 
+// Operator +
+CudaMatrix equelleCUDA::operator+(CudaMatrix&& lhs, CudaMatrix&& rhs) {
+    // If one of the matrices is emtpy, we interpret it as a matrix filled with
+    // zeros, and therefore just return the other matrix.
+    // This is convenient when we implement autodiff by using CudaMatrix.
+    if ( lhs.isEmpty() ) {
+  return CudaMatrix(std::move(rhs));
+    } 
+    else if ( rhs.isEmpty() ) {
+  return CudaMatrix(std::move(lhs));
+    } 
+    else {
+      lhs = cudaMatrixSum(lhs, rhs, 1.0);
+      return CudaMatrix(std::move(lhs));
+    }
+}
+
 CudaMatrix equelleCUDA::operator-(const CudaMatrix& lhs, const CudaMatrix& rhs) {
     // If one of the matrices is emtpy, we interpret it as a matrix filled with
     // zeros, and therefore just return the other matrix.

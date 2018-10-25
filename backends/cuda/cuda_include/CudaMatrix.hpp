@@ -210,6 +210,7 @@ namespace equelleCUDA {
 	*/
 	CudaMatrix transpose() const;
 
+	friend CudaMatrix operator+(CudaMatrix&& lhs, CudaMatrix&& rhs);
 	friend CudaMatrix operator+(const CudaMatrix& lhs, const CudaMatrix& rhs);
 	friend CudaMatrix operator-(const CudaMatrix& lhs, const CudaMatrix& rhs);
 	// C = A + beta*B
